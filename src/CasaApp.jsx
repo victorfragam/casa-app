@@ -715,7 +715,7 @@ function MarketScreen({ state, dispatch, showToast }) {
                   return (
                     <div key={r.id} style={{...C.card,padding:16,display:"flex",flexDirection:"column",gap:10}}>
                       <div style={{width:44,height:44,borderRadius:14,background:can?"#FFF8E1":"#F8F7FB",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        <Icon name={r.icon} size:={26} color={can?"#FFB323":C.softer}/>
+                        <Icon name={r.icon} size={26} color={can?"#FFB323":C.softer}/>
                       </div>
                       <div style={{fontFamily:"Nunito",fontWeight:800,fontSize:13,color:C.text,lineHeight:1.3,flex:1}}>{r.name}</div>
                       {can?(
