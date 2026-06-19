@@ -304,8 +304,6 @@ function TaskForm({initial={},onSave,settings}){
   return<div>
     <label style={lbl}>NOME</label>
     <input value={v.name} onChange={e=>setV(p=>({...p,name:e.target.value}))} placeholder={"Ex: Lavar lou\u00e7a"} style={inp}/>
-    <label style={lbl}>CATEGORIA</label>
-    <input value={v.cat} onChange={e=>setV(p=>({...p,cat:e.target.value}))} placeholder="Ex: Cozinha" style={inp}/>
     <IconPicker value={v.icon} onChange={ic=>setV(p=>({...p,icon:ic}))}/>
     <label style={lbl}>TEMA</label>
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
@@ -500,7 +498,7 @@ function HomeScreen({state,dispatch,onOpenSettings}){
           <TaskIcon task={nextTaskData} size={48}/>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontFamily:F.display,fontWeight:700,fontSize:17,color:C.text}}>{nextTaskData.name}</div>
-            <div style={{fontFamily:F.body,fontSize:12.5,fontWeight:700,color:C.soft}}>{nextTaskData.cat}{nextTask.count>1?` \u00b7 ${nextTask.done||0}/${nextTask.count}`:""}</div>
+            {nextTask.count>1&&<div style={{fontFamily:F.body,fontSize:12.5,fontWeight:700,color:C.soft}}>{nextTask.done||0}/{nextTask.count}</div>}
           </div>
           <div style={{textAlign:"right",display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
             <PtsBolt n={`+${calcBase(nextTaskData,settings)}`} size={16}/>
