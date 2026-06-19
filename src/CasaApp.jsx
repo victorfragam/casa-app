@@ -809,12 +809,10 @@ function DraftScreen({state,dispatch}){
         ))}
       </div>
     </>}
-    {!draftLocked&&<div style={{position:"fixed",bottom:"calc(env(safe-area-inset-bottom,0px) + 68px)",left:0,right:0,maxWidth:430,margin:"0 auto",background:"#fff",borderTop:"1px solid #EFEBF8",borderBottom:"1px solid #EFEBF8",padding:"12px 16px",display:"flex",alignItems:"center",gap:10,zIndex:60}}>
-      <div style={{flex:1,lineHeight:1.2}}>
-        <div style={{fontFamily:F.display,fontWeight:800,fontSize:16,color:C.text}}>{cnt0+cnt1} tarefas assumidas</div>
-        {missingReq.length>0&&<div style={{fontFamily:F.body,fontWeight:700,fontSize:12,color:C.fire}}>Faltam {missingReq.length} obrigat{"\u00f3"}ria{missingReq.length!==1?"s":""}</div>}
+    {!draftLocked&&<div style={{position:"fixed",bottom:"calc(env(safe-area-inset-bottom,0px) + 80px)",left:0,right:0,maxWidth:430,margin:"0 auto",padding:"0 20px",zIndex:60,pointerEvents:"none"}}>
+      <div style={{background:"#fff",borderRadius:22,padding:16,boxShadow:"0 4px 32px rgba(33,27,51,.18)",pointerEvents:"all"}}>
+        <Btn3D onClick={()=>dispatch({type:"DRAFT_CONFIRM"})} disabled={!canConfirm}>Confirmar draft</Btn3D>
       </div>
-      <Btn3D onClick={()=>dispatch({type:"DRAFT_CONFIRM"})} disabled={!canConfirm} style={{width:"auto",padding:"13px 18px",fontSize:15}}>Confirmar</Btn3D>
     </div>}
     {confirmUnassign&&<ConfirmSheet
       title={`Desatribuir "${confirmUnassign.task.name}"?`}
