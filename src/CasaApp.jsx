@@ -175,7 +175,7 @@ function TaskMeta({task,settings}){
     <span style={{color:C.soft}}>{dLabel}</span>
     {aLabel&&<span style={{color:aC,background:`${aC}18`,borderRadius:6,padding:"1px 6px",fontSize:10.5}}>{aLabel}</span>}
     <PtsBolt n={base} size={13}/><Coin n={base} size={13}/>
-    {(task?.minCount||0)>0&&<span style={{color:C.violet,fontSize:11}}>m\u00edn {task.minCount}\u00d7</span>}
+    {(task?.minCount||0)>0&&<span style={{color:C.violet,fontSize:11}}>{"m\u00edn"} {task.minCount}{"×"}</span>}
   </div>
 }
 function Pill({icon,value,color=C.violet,iconColor}){
@@ -321,7 +321,7 @@ function TaskForm({initial={},onSave,settings}){
       <Icon name="bolt" size={18} color={C.violet}/>
       <span style={{fontFamily:F.display,fontWeight:800,fontSize:15,color:C.violet}}>{base} pts e {base} moedas</span>
     </div>
-    <label style={{...lbl,textTransform:"none",fontSize:13}}>{"M\u00ednimo por semana (0 = opcional)"}</label>
+    <label style={lbl}>{"M\u00ednimo por semana (0 = opcional)"}</label>
     <input type="number" value={v.minCount} min="0" onChange={e=>setV(p=>({...p,minCount:+e.target.value}))} style={inp}/>
     <Btn3D onClick={()=>v.name.trim()&&onSave({...v})} disabled={!v.name.trim()}>Salvar tarefa</Btn3D>
   </div>
@@ -527,6 +527,36 @@ function HomeScreen({state,dispatch,onOpenSettings}){
   </div>
 }
 
+function GranularResetModal({onConfirm,onCancel}){
+  const[sel,setSel]=useState({progress:true,draft:false,tasks:false,rewards:false,gameSettings:false,house:false})
+  const toggle=k=>setSel(p=>({...p,[k]:!p[k]}))
+  const opts=[
+    {key:"progress",label:"Progresso",desc:"Pontos, moedas, hist\u00f3rico, conquistas e resgates"},
+    {key:"draft",label:"Draft atual",desc:"Tarefas assumidas e progresso desta semana"},
+    {key:"tasks",label:"Biblioteca de tarefas",desc:"Volta \u00e0s 26 tarefas padr\u00e3o"},
+    {key:"rewards",label:"Recompensas do Market",desc:"Volta \u00e0s recompensas padr\u00e3o"},
+    {key:"gameSettings",label:"Dificuldades e Chatices",desc:"Volta aos valores padr\u00e3o"},
+    {key:"house",label:"Casa e nomes",desc:"Reseta o onboarding completamente"},
+  ]
+  const noneSelected=!Object.values(sel).some(Boolean)
+  return<BottomSheet title="O que apagar?" onClose={onCancel}>
+    <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
+      {opts.map(o=>(
+        <div key={o.key} onClick={()=>toggle(o.key)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",borderBottom:"1px solid #F2EEFA",cursor:"pointer"}}>
+          <Icon name={sel[o.key]?"check_box":"check_box_outline_blank"} size={24} color={sel[o.key]?"#D93434":C.softer}/>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text}}>{o.label}</div>
+            <div style={{fontFamily:F.body,fontSize:12,fontWeight:700,color:C.soft}}>{o.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <Btn3D onClick={()=>onConfirm(sel)} disabled={noneSelected} color="#D93434" shadow="#A02828">
+      Apagar selecionados
+    </Btn3D>
+  </BottomSheet>
+}
+
 function SettingsScreen({state,dispatch,onClose}){
   const[house,setHouse]=useState(state.house.name),[name0,setName0]=useState(state.users[0].name),[name1,setName1]=useState(state.users[1].name)
   const[expanded,setExpanded]=useState({library:false,market:false,difficulties:false,annoyances:false})
@@ -663,8 +693,9 @@ function SettingsScreen({state,dispatch,onClose}){
       onCancel={()=>setConfirmDel(null)}/>}
     {resetModal==="week"&&<ConfirmWordModal word="SEMANA" title="Resetar a semana?" desc={"O draft e os progressos desta semana ser\u00e3o apagados. Hist\u00f3rico e pontos ficam intactos."} danger
       onConfirm={()=>{dispatch({type:"RESET_WEEK"});setResetModal(null)}} onCancel={()=>setResetModal(null)}/>}
-    {resetModal==="all"&&<ConfirmWordModal word="APAGAR" title="Apagar tudo?" desc={"Todos os dados ser\u00e3o perdidos permanentemente."} danger
-      onConfirm={()=>{dispatch({type:"RESET"});setResetModal(null);onClose()}} onCancel={()=>setResetModal(null)}/>}
+    {resetModal==="all"&&<GranularResetModal
+      onConfirm={sel=>{dispatch({type:"PARTIAL_RESET",sel});setResetModal(null);if(sel.house)onClose()}}
+      onCancel={()=>setResetModal(null)}/>}
   </div>
 }
 
@@ -681,7 +712,7 @@ function DraftScreen({state,dispatch}){
     const t0=a0.find(a=>a.id===task.id)?.count||0,t1=a1.find(a=>a.id===task.id)?.count||0
     return t0+t1<task.minCount
   })
-  const canConfirm=!draftLocked&&missingReq.length===0&&(cnt0+cnt1>0)
+  const canConfirm=!draftLocked&&(cnt0+cnt1>0)
   const setCount=(u,id,n)=>dispatch({type:"DRAFT_SET",userId:String(u),taskId:id,count:Math.max((u===0?a0:a1).find(a=>a.id===id)?.done||0,n)})
   const currentAssigns=showU===0?a0:a1
   return<div style={{padding:"calc(env(safe-area-inset-top,20px) + 18px) 16px 140px",display:"flex",flexDirection:"column",gap:14}}>
@@ -1028,13 +1059,7 @@ function reduce(prev,action){
       return{...prev,draft:{...prev.draft,assigns:{...prev.draft.assigns,[userId]:newArr}}}
     }
     case "DRAFT_CONFIRM":{
-      const wid=sundayWeekId(),lib=prev.library||LIB_DEFAULT
-      const missing=lib.filter(t=>(t.minCount||0)>0).filter(task=>{
-        const t0=(prev.draft.assigns?.["0"]||[]).find(a=>a.id===task.id)?.count||0
-        const t1=(prev.draft.assigns?.["1"]||[]).find(a=>a.id===task.id)?.count||0
-        return t0+t1<task.minCount
-      })
-      if(missing.length>0)return{...prev,_draftError:`Faltam: ${missing.map(t=>t.name).join(", ")}`}
+      const wid=sundayWeekId()
       if(prev.draft.week_id!==wid){
         const assigns={}
         for(const[uid,arr]of Object.entries(prev.draft.assigns||{}))assigns[uid]=arr.map(a=>({...a,done:0}))
@@ -1132,6 +1157,16 @@ function reduce(prev,action){
     case "EDIT_REWARD":return{...prev,market:(prev.market||[]).map(r=>r.id===action.rewardId?{...r,...action.updates}:r)}
     case "DELETE_REWARD":return{...prev,market:(prev.market||[]).filter(r=>r.id!==action.rewardId)}
     case "SWITCH_USER":return{...prev,viewUser:prev.viewUser===0?1:0}
+    case "PARTIAL_RESET":{
+      const{sel}=action;let s={...prev}
+      if(sel.progress){s.stats={"0":blankStats(),"1":blankStats()};s.history=[];s.unlocked={"0":[],"1":[]};s.redemptions=[]}
+      if(sel.draft)s.draft=blankDraft()
+      if(sel.tasks)s.library=LIB_DEFAULT
+      if(sel.rewards)s.market=MKT_DEFAULT
+      if(sel.gameSettings)s.settings=blankSettings()
+      if(sel.house){s.house={name:""};s.users=[{id:0,name:"",color:"blue"},{id:1,name:"",color:"pink"}]}
+      return s
+    }
     case "RESET_WEEK": return{...prev,draft:blankDraft()}
     case "RESET":return blankState()
     default:return prev
