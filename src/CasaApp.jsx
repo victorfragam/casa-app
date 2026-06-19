@@ -404,11 +404,12 @@ function JoinOrCreateScreen({onDone}){
     try{
       const search=code.trim().toLowerCase().replace(/-/g,"")
       const{data,error}=await supabase.from("houses").select().ilike("id",`${search}%`)
-      if(error||!data||data.length===0)throw new Error("not found")
+      if(error)throw error
+      if(!data||data.length===0)throw new Error(`Nenhuma casa com c\u00f3digo "${code.trim()}"`)
       localStorage.setItem("casa_house_id",data[0].id)
       localStorage.setItem("casa_user_idx","1")
       onDone(data[0].id,"1")
-    }catch(e){setError("Casa n\u00e3o encontrada. Verifique o c\u00f3digo.");setLoading(false)}
+    }catch(e){setError(`Erro: ${e?.message||e}`);setLoading(false)}
   }
   return<div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 28px",textAlign:"center"}}>
     <div style={{width:100,height:100,borderRadius:30,background:"linear-gradient(160deg,#8B6BFF,#6A3DF0)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 0 #5A28C0,0 18px 40px rgba(106,61,240,.35)",marginBottom:24}}><Icon name="home" size={54} color="#fff"/></div>
