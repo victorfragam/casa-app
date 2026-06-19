@@ -388,20 +388,16 @@ function JoinOrCreateScreen({onDone}){
   const[loading,setLoading]=useState(false)
   const[error,setError]=useState("")
 
-  const existingData=(()=>{try{const d=localStorage.getItem("casa_v2");return d?JSON.parse(d):null}catch{return null}})()
-
   const handleCreate=async()=>{
     setLoading(true);setError("")
     try{
-      let initialState=blankState()
-      try{if(existingData)initialState=migrateState(existingData)}catch(e){console.warn("migrate failed",e)}
-      const{data,error}=await supabase.from("houses").insert({state:initialState}).select().single()
+      const{data,error}=await supabase.from("houses").insert({state:blankState()}).select().single()
       if(error)throw error
       localStorage.setItem("casa_house_id",data.id)
       localStorage.setItem("casa_user_idx","0")
-      localStorage.removeItem("casa_v2")
       onDone(data.id,"0")
     }catch(e){setError(`Erro: ${e?.message||e}`);setLoading(false)}
+  }
   }
   const handleJoin=async()=>{
     if(code.trim().length<4)return
@@ -420,8 +416,7 @@ function JoinOrCreateScreen({onDone}){
     <div style={{fontFamily:F.display,fontWeight:800,fontSize:32,color:C.text,marginBottom:8}}>Casa</div>
     <div style={{fontFamily:F.body,fontWeight:700,fontSize:15,color:C.soft,maxWidth:260,marginBottom:40,lineHeight:1.5}}>{"Tarefas dom\u00e9sticas em competi\u00e7\u00e3o entre voc\u00eas dois."}</div>
     {!mode&&<div style={{width:"100%",display:"flex",flexDirection:"column",gap:12}}>
-      <Btn3D onClick={handleCreate} disabled={loading}>{loading?"Criando...":(existingData?"Criar casa (migrar meus dados)":"Criar nova casa")}</Btn3D>
-      {existingData&&<div style={{fontFamily:F.body,fontSize:12,fontWeight:700,color:C.green,textAlign:"center"}}>{"✓ Dados encontrados — serão migrados"}</div>}
+      <Btn3D onClick={handleCreate} disabled={loading}>{loading?"Criando...":"Criar nova casa"}</Btn3D>
       <button onClick={()=>setMode("join")} style={{background:"none",border:`2px solid ${C.violet}`,borderRadius:16,padding:"14px 20px",fontFamily:F.display,fontWeight:800,fontSize:17,color:C.violet,cursor:"pointer",width:"100%"}}>Entrar numa casa</button>
     </div>}
     {mode==="join"&&<div style={{width:"100%",display:"flex",flexDirection:"column",gap:12}}>
