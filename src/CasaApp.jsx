@@ -809,7 +809,7 @@ function DraftScreen({state,dispatch}){
         ))}
       </div>
     </>}
-    {!draftLocked&&<div style={{position:"fixed",bottom:0,left:0,right:0,maxWidth:430,margin:"0 auto",background:"#fff",borderTop:"1px solid #EFEBF8",padding:"12px 16px 28px",display:"flex",alignItems:"center",gap:10,zIndex:10}}>
+    {!draftLocked&&<div style={{position:"fixed",bottom:"calc(env(safe-area-inset-bottom,0px) + 68px)",left:0,right:0,maxWidth:430,margin:"0 auto",background:"#fff",borderTop:"1px solid #EFEBF8",borderBottom:"1px solid #EFEBF8",padding:"12px 16px",display:"flex",alignItems:"center",gap:10,zIndex:60}}>
       <div style={{flex:1,lineHeight:1.2}}>
         <div style={{fontFamily:F.display,fontWeight:800,fontSize:16,color:C.text}}>{cnt0+cnt1} tarefas assumidas</div>
         {missingReq.length>0&&<div style={{fontFamily:F.body,fontWeight:700,fontSize:12,color:C.fire}}>Faltam {missingReq.length} obrigat{"\u00f3"}ria{missingReq.length!==1?"s":""}</div>}
