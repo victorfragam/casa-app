@@ -54,7 +54,7 @@ const LIB_DEFAULT=[
   {id:"colocar-roupa",   name:"Colocar roupas na m\u00e1quina",           cat:"Lavanderia",icon:"local_laundry_service",th:"blue",  diff:"Facil", annoy:"Ok",  minCount:0},
   {id:"estender-roupas", name:"Estender as roupas",                       cat:"Lavanderia",icon:"dry_cleaning",         th:"teal",  diff:"Facil", annoy:"Paia",minCount:0},
   {id:"guardar-roupas",  name:"Guardar roupas",                           cat:"Lavanderia",icon:"checkroom",            th:"pink",  diff:"Facil", annoy:"Ok",  minCount:0},
-  {id:"trocar-toalhas",  name:"Trocar toalhas",                           cat:"Banheiro",  icon:"towel",                th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"trocar-toalhas",  name:"Trocar toalhas",                           cat:"Banheiro",  icon:"soap",                 th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
   {id:"trocar-cama",     name:"Trocar roupa de cama",                     cat:"Quarto",    icon:"king_bed",             th:"purple",diff:"Dificil",annoy:"Paia",minCount:0},
   {id:"superficies",     name:"Tirar sujeira das superf\u00edcies",       cat:"Geral",     icon:"countertops",          th:"orange",diff:"Media", annoy:"Ok",  minCount:0},
   {id:"tirar-lixo",      name:"Tirar o lixo",                             cat:"Geral",     icon:"delete",               th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
@@ -97,7 +97,7 @@ const ACHS=[
   {id:"chef10",  label:"Chef de Casa",         icon:"cooking",              th:"orange",desc:"Cozinhou 10\u00d7",             ok:s=>(s.task_counts?.["cozinhar"]||0)>=10},
 ]
 const TITLES=[{min:500,t:"Lenda da Casa"},{min:100,t:"Faxineiro Lend\u00e1rio"},{min:50,t:"Mestre de Casa"},{min:10,t:"Faxineiro Jr."},{min:0,t:"Iniciante"}]
-const ICON_OPTIONS=["restaurant","dishwasher","smart_toy","local_laundry_service","dry_cleaning","checkroom","towel","king_bed","countertops","delete","recycling","yard","inventory_2","cooking","kitchen","mode_heat","water_drop","light_mode","plumbing","cleaning_services","pets","local_drink","spa","list_alt","shopping_cart","bathtub","favorite","movie","hiking","cake","local_cafe","task_alt","home","star","bolt","emoji_events","card_giftcard","settings_remote","restaurant_menu","sports_esports","fitness_center","music_note","handyman","local_florist","iron","vacuum"]
+const ICON_OPTIONS=["restaurant","dishwasher","smart_toy","local_laundry_service","dry_cleaning","checkroom","soap","king_bed","countertops","delete","recycling","yard","inventory_2","cooking","kitchen","mode_heat","water_drop","light_mode","plumbing","cleaning_services","pets","local_drink","spa","list_alt","shopping_cart","bathtub","favorite","movie","hiking","cake","local_cafe","task_alt","home","star","bolt","emoji_events","card_giftcard","settings_remote","restaurant_menu","sports_esports","fitness_center","music_note","handyman","local_florist","iron","vacuum"]
 const THEMES_LIST=["blue","green","purple","orange","teal","pink","violet"]
 const TIER_LIST=["Baixo","Medio","Alto"]
 const TIER_LBL={Baixo:"Baixo custo",Medio:"M\u00e9dio custo",Alto:"Alto custo"}
@@ -260,13 +260,13 @@ function ConfirmWordModal({word,title,desc,onConfirm,onCancel,danger=false}){
 }
 // Collapsible section for settings
 function Collapsible({icon,label,badge,open,onToggle,children}){
-  return<div>
-    <button onClick={onToggle} style={{width:"100%",background:open?"#F0ECFF":"#fff",border:"none",borderRadius:16,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",boxShadow:"0 2px 0 rgba(33,27,51,.05)",marginBottom:open?0:0}}>
+  return<div style={{...C.card,padding:0,overflow:"hidden"}}>
+    <button onClick={onToggle} style={{width:"100%",background:"#fff",border:"none",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
       <Icon name={icon} size={22} color={C.violet}/>
       <span style={{flex:1,fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text,textAlign:"left"}}>{label}{badge!=null?` (${badge})`:""}</span>
       <Icon name={open?"expand_less":"expand_more"} size={22} color={C.soft}/>
     </button>
-    {open&&<div style={{...C.card,borderRadius:"0 0 16px 16px",padding:"4px 14px",marginTop:-2}}>{children}</div>}
+    {open&&<div style={{borderTop:"1px solid #F2EEFA",padding:"4px 14px"}}>{children}</div>}
   </div>
 }
 
@@ -317,7 +317,7 @@ function TaskForm({initial={},onSave,settings}){
     </div>
     <label style={lbl}>CHATICE</label>
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-      {annoys.map(a=>{const col=aC[a.key]||C.soft;return<button key={a.key} onClick={()=>setV(p=>({...p,annoy:a.key}))} style={{flex:1,minWidth:60,padding:"8px 4px",borderRadius:12,border:"none",background:v.annoy===a.key?col:"#F8F6FB",color:v.annoy===a.key?"#fff":col,fontFamily:F.body,fontWeight:800,fontSize:13,cursor:"pointer"}}>{a.label}<br/><span style={{fontSize:10,opacity:.8}}>{a.mult}\u00d7</span></button>})}
+      {annoys.map(a=>{const col=aC[a.key]||C.soft;return<button key={a.key} onClick={()=>setV(p=>({...p,annoy:a.key}))} style={{flex:1,minWidth:60,padding:"8px 4px",borderRadius:12,border:"none",background:v.annoy===a.key?col:"#F8F6FB",color:v.annoy===a.key?"#fff":col,fontFamily:F.body,fontWeight:800,fontSize:13,cursor:"pointer"}}>{a.label}<br/><span style={{fontSize:10,opacity:.8}}>{a.mult}{"×"}</span></button>})}
     </div>
     <div style={{background:"#F0ECFF",borderRadius:14,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:8}}>
       <Icon name="bolt" size={18} color={C.violet}/>
@@ -619,7 +619,7 @@ function SettingsScreen({state,dispatch,onClose}){
         {diffs.map((d,i)=>(
           <div key={d.key} style={{display:"grid",gridTemplateColumns:"1fr 80px",gap:8,padding:"10px 0",borderBottom:i<diffs.length-1?"1px solid #F2EEFA":"none",alignItems:"center"}}>
             <div>
-              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft,marginBottom:4}}>{d.key}</div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft,marginBottom:4}}>{"N\u00edvel "+(i+1)}</div>
               <input value={d.label} onChange={e=>setDiffs(prev=>prev.map((x,j)=>j===i?{...x,label:e.target.value}:x))}
                 style={{...inp,marginBottom:0,padding:"8px 10px",fontSize:13}}/>
             </div>
@@ -639,7 +639,7 @@ function SettingsScreen({state,dispatch,onClose}){
           const cols=["#27C26E","#E0900A","#FF7A1A","#D93434"]
           return<div key={a.key} style={{display:"grid",gridTemplateColumns:"1fr 80px",gap:8,padding:"10px 0",borderBottom:i<annoys.length-1?"1px solid #F2EEFA":"none",alignItems:"center"}}>
             <div>
-              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:cols[i]||C.soft,marginBottom:4}}>{a.key}</div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:cols[i]||C.soft,marginBottom:4}}>{"N\u00edvel "+(i+1)}</div>
               <input value={a.label} onChange={e=>setAnnoys(prev=>prev.map((x,j)=>j===i?{...x,label:e.target.value}:x))}
                 style={{...inp,marginBottom:0,padding:"8px 10px",fontSize:13}}/>
             </div>
@@ -1065,6 +1065,7 @@ function reduce(prev,action){
       const now=new Date(),dateStr=`${now.toLocaleDateString("pt-BR")} ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
       const hist={userId,taskId,taskName:task.name,pts:base,coins:earned,date:dateStr,stolen:myAssign?.stolen}
       const curUnl=prev.unlocked?.[userId]||[],newAchs=checkAchs(s0,curUnl)
+      if(newAchs.length>0){s0.coins+=50*newAchs.length}
       return{...prev,stats:{...prev.stats,[userId]:s0},draft:{...prev.draft,assigns,bonus_given:bonusGiven},history:[...(prev.history||[]),hist],unlocked:{...prev.unlocked,[userId]:[...curUnl,...newAchs]},_newAchs:newAchs,_reward:{pts:base,coins:earned,bonus:gotBonus}}
     }
     case "UNDO_COMPLETE":{
