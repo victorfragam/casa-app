@@ -721,7 +721,11 @@ function DraftScreen({state,dispatch}){
       <div style={{fontFamily:F.body,fontSize:13,fontWeight:700,color:C.soft,marginTop:2}}>{"Escolha quais tarefas assumir nesta semana."}</div>
     </div>
     {draftLocked&&<div style={{background:"linear-gradient(135deg,#FFF3D6,#FFE6A8)",borderRadius:18,padding:"14px 16px",boxShadow:"0 3px 0 #F2D27E"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><Icon name="lock" size={20} color="#B7892A"/><span style={{fontFamily:F.display,fontWeight:800,fontSize:16,color:"#7A5A12"}}>Draft confirmado {"\u2713"}</span></div>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+        <Icon name="lock" size={20} color="#B7892A"/>
+        <span style={{fontFamily:F.display,fontWeight:800,fontSize:16,color:"#7A5A12",flex:1}}>Draft confirmado {"\u2713"}</span>
+        <button onClick={()=>dispatch({type:"UNLOCK_DRAFT"})} style={{background:"rgba(0,0,0,.1)",border:"none",borderRadius:10,padding:"5px 10px",fontFamily:F.body,fontWeight:800,fontSize:12,color:"#7A5A12",cursor:"pointer"}}>Editar</button>
+      </div>
       <div style={{fontFamily:F.body,fontSize:12.5,fontWeight:700,color:"#B7892A",display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:4}}>
         <span>Libera: {nextSundayStr()}</span>
         <span style={{color:stealsUsed>=2?"#D93434":C.fire}}>Roubos: {stealsUsed}/2 esta semana</span>
@@ -1043,7 +1047,7 @@ function reduce(prev,action){
     case "INIT":{
       const{house,myName,pairName,assigns}=action,s=blankState()
       s.house.name=house;s.users[0].name=myName;s.users[1].name=pairName
-      s.draft.week_id=sundayWeekId();s.draft.confirmed=true
+      s.draft.week_id=sundayWeekId();s.draft.confirmed=false
       s.draft.assigns["0"]=Object.entries(assigns).filter(([,n])=>n>0).map(([id,count])=>({id,count,done:0}))
       return s
     }
@@ -1167,6 +1171,7 @@ function reduce(prev,action){
       if(sel.house){s.house={name:""};s.users=[{id:0,name:"",color:"blue"},{id:1,name:"",color:"pink"}]}
       return s
     }
+    case "UNLOCK_DRAFT":return{...prev,draft:{...prev.draft,confirmed:false}}
     case "RESET_WEEK": return{...prev,draft:blankDraft()}
     case "RESET":return blankState()
     default:return prev
