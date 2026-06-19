@@ -398,7 +398,6 @@ function JoinOrCreateScreen({onDone}){
       onDone(data.id,"0")
     }catch(e){setError(`Erro: ${e?.message||e}`);setLoading(false)}
   }
-  }
   const handleJoin=async()=>{
     if(code.trim().length<4)return
     setLoading(true);setError("")
