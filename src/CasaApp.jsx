@@ -321,7 +321,7 @@ function TaskForm({initial={},onSave,settings}){
       <Icon name="bolt" size={18} color={C.violet}/>
       <span style={{fontFamily:F.display,fontWeight:800,fontSize:15,color:C.violet}}>{base} pts e {base} moedas</span>
     </div>
-    <label style={lbl}>{"M\u00cdN/SEM. (0 = opcional)"}</label>
+    <label style={{...lbl,textTransform:"none",fontSize:13}}>{"M\u00ednimo por semana (0 = opcional)"}</label>
     <input type="number" value={v.minCount} min="0" onChange={e=>setV(p=>({...p,minCount:+e.target.value}))} style={inp}/>
     <Btn3D onClick={()=>v.name.trim()&&onSave({...v})} disabled={!v.name.trim()}>Salvar tarefa</Btn3D>
   </div>
@@ -584,7 +584,7 @@ function SettingsScreen({state,dispatch,onClose}){
             <TaskIcon task={task} size={38}/>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:F.display,fontWeight:700,fontSize:14,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{task.name}</div>
-              <div style={{fontFamily:F.body,fontSize:11,fontWeight:700,color:C.soft}}>{task.cat} {"\u00b7"} {calcBase(task,settings)}pts{(task.minCount||0)>0?` \u00b7 m\u00edn ${task.minCount}\u00d7`:""}</div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:700,color:C.soft}}>{calcBase(task,settings)}pts{(task.minCount||0)>0?` · mín ${task.minCount}×`:""}</div>
             </div>
             <button onClick={e=>{e.stopPropagation();setConfirmDel({type:"task",id:task.id})}} style={{width:32,height:32,borderRadius:10,background:"#FFF0F0",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="delete" size={16} color="#D93434"/></button>
           </div>
