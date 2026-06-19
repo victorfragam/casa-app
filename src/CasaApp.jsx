@@ -304,7 +304,7 @@ function Onboarding({onDone}){
       <div style={{fontFamily:F.display,fontWeight:800,fontSize:34,color:C.text}}>Casa</div>
       <div style={{fontFamily:F.body,fontWeight:700,fontSize:16,color:"#6E6688",marginTop:8,maxWidth:280,lineHeight:1.4}}>{"Transforme as tarefas da casa numa competi\u00e7\u00e3o divertida entre voc\u00eas dois."}</div>
       <div style={{display:"flex",gap:18,margin:"34px 0"}}>
-        {[["emoji_events","Ranking",C.violet],["paid","Recompensas",C.gold],["local_fire_department",{"Sequ\u00eancias"},C.fire]].map(([icon,label,col])=>(
+        {[["emoji_events","Ranking",C.violet],["paid","Recompensas",C.gold],["local_fire_department","Sequências",C.fire]].map(([icon,label,col])=>(
           <div key={label} style={{textAlign:"center"}}>
             <div style={{width:54,height:54,borderRadius:16,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 3px 0 rgba(0,0,0,.06)",marginBottom:6}}><Icon name={icon} size={28} color={col}/></div>
             <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft}}>{label}</div>
