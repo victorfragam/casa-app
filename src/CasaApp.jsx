@@ -1107,8 +1107,7 @@ export default function CasaApp(){
         </button>
       ))}
     </div>
-    {settingsOpen&&<SettingsScreen 
-                state={state} dispatch={dispatch} onClose={()=>setSettingsOpen(false)}/>}
+    {settingsOpen&&<SettingsScreen state={state} dispatch={dispatch} onClose={()=>setSettingsOpen(false)}/>}
     {toast&&<Toast msg={toast.msg} action={toast.action} onAction={toast.onAction} onClose={()=>setToast(null)}/>}
     <AchModal ach={achModal} onClose={()=>setAchModal(null)}/>
   </div>
