@@ -22,35 +22,58 @@ const C={
 }
 const ME_GRAD="linear-gradient(160deg,#54A0FF,#2E7BF0)",ME_SD="#1F5FCC"
 const PAIR_GRAD="linear-gradient(160deg,#FF7DB5,#FF4F9A)",PAIR_SD="#E02E7D"
-const diffColor=d=>d==="Facil"?C.green:d==="Dificil"?C.fire:C.goldTxt
+
+// Dificuldade base => pontos. Chatice => multiplicador
+const DEFAULT_DIFFICULTIES=[
+  {key:"Facil",   label:"F\u00e1cil",   pts:10},
+  {key:"Media",   label:"M\u00e9dio",   pts:15},
+  {key:"Dificil", label:"Dif\u00edcil", pts:30},
+  {key:"Extrema", label:"Extrema", pts:50},
+]
+const DEFAULT_ANNOYANCES=[
+  {key:"Ok",    label:"Ok",    mult:1  },
+  {key:"Paia",  label:"Paia",  mult:1.2},
+  {key:"Pqp",   label:"Pqp",  mult:1.5},
+  {key:"Morte", label:"Morte", mult:2  },
+]
+
+const calcBase=(task,settings)=>{
+  const diffs=(settings?.difficulties)||DEFAULT_DIFFICULTIES
+  const annoys=(settings?.annoyances)||DEFAULT_ANNOYANCES
+  const d=diffs.find(d=>d.key===(task?.diff||"Facil"))||{pts:10}
+  const a=annoys.find(a=>a.key===(task?.annoy||"Ok"))||{mult:1}
+  return Math.round(d.pts*a.mult)
+}
+
+const ANNOY_COLOR={Ok:C=>C.green,Paia:C=>C.goldTxt,Pqp:C=>C.fire,Morte:()=>"#D93434"}
 
 const LIB_DEFAULT=[
-  {id:"guardar-louca",   name:"Guardar a lou\u00e7a da m\u00e1quina",     cat:"Cozinha",   icon:"restaurant",           th:"blue",  pts:15,coins:10,diff:"Facil", minCount:0},
-  {id:"botar-louca",     name:"Botar a lou\u00e7a na m\u00e1quina",       cat:"Cozinha",   icon:"dishwasher",           th:"blue",  pts:15,coins:10,diff:"Facil", minCount:0},
-  {id:"passar-aecio",    name:"Passar o A\u00e9cio",                       cat:"Geral",     icon:"smart_toy",            th:"teal",  pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"colocar-roupa",   name:"Colocar roupas na m\u00e1quina",           cat:"Lavanderia",icon:"local_laundry_service",th:"blue",  pts:25,coins:15,diff:"Facil", minCount:0},
-  {id:"estender-roupas", name:"Estender as roupas",                       cat:"Lavanderia",icon:"dry_cleaning",         th:"teal",  pts:25,coins:15,diff:"Facil", minCount:0},
-  {id:"guardar-roupas",  name:"Guardar roupas",                           cat:"Lavanderia",icon:"checkroom",            th:"pink",  pts:30,coins:18,diff:"Media", minCount:0},
-  {id:"trocar-toalhas",  name:"Trocar toalhas",                           cat:"Banheiro",  icon:"towel",                th:"green", pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"trocar-cama",     name:"Trocar roupa de cama",                     cat:"Quarto",    icon:"king_bed",             th:"purple",pts:50,coins:30,diff:"Media", minCount:0},
-  {id:"superficies",     name:"Tirar sujeira das superf\u00edcies",       cat:"Geral",     icon:"countertops",          th:"orange",pts:30,coins:18,diff:"Media", minCount:0},
-  {id:"tirar-lixo",      name:"Tirar o lixo",                             cat:"Geral",     icon:"delete",               th:"green", pts:15,coins:10,diff:"Facil", minCount:0},
-  {id:"levar-lixo",      name:"Levar o lixo pra baixo",                  cat:"Geral",     icon:"recycling",            th:"green", pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"regar-plantas",   name:"Regar plantas",                            cat:"Geral",     icon:"yard",                 th:"green", pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"organizar",       name:"Organizar bagu\u00e7as superficiais",      cat:"Geral",     icon:"inventory_2",          th:"orange",pts:25,coins:15,diff:"Facil", minCount:0},
-  {id:"cozinhar",        name:"Cozinhar",                                 cat:"Cozinha",   icon:"cooking",              th:"orange",pts:40,coins:25,diff:"Media", minCount:0},
-  {id:"limpar-geladeira",name:"Limpar a geladeira",                       cat:"Cozinha",   icon:"kitchen",              th:"blue",  pts:45,coins:28,diff:"Media", minCount:0},
-  {id:"limpar-fogao",    name:"Limpar o fog\u00e3o",                      cat:"Cozinha",   icon:"mode_heat",            th:"orange",pts:35,coins:22,diff:"Media", minCount:0},
-  {id:"limpar-pia",      name:"Limpar a pia",                             cat:"Cozinha",   icon:"water_drop",           th:"teal",  pts:25,coins:15,diff:"Facil", minCount:0},
-  {id:"limpar-espelhos", name:"Limpar espelhos",                          cat:"Banheiro",  icon:"light_mode",           th:"blue",  pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"limpar-vaso",     name:"Limpar vaso",                              cat:"Banheiro",  icon:"plumbing",             th:"purple",pts:30,coins:18,diff:"Media", minCount:0},
-  {id:"limpar-caixa",    name:"Limpar a caixa de areia",                  cat:"Gatos",     icon:"cleaning_services",    th:"orange",pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"trocar-areia",    name:"Trocar areia e lavar a caixa",             cat:"Gatos",     icon:"recycling",            th:"teal",  pts:35,coins:22,diff:"Media", minCount:0},
-  {id:"lavar-pote",      name:"Lavar pote de \u00e1gua",                  cat:"Gatos",     icon:"water_drop",           th:"blue",  pts:15,coins:10,diff:"Facil", minCount:0},
-  {id:"dar-comida",      name:"Dar comida pras gatas",                    cat:"Gatos",     icon:"pets",                 th:"green", pts:10,coins:8, diff:"Facil", minCount:0},
-  {id:"dar-agua",        name:"Dar \u00e1gua pras gatas",                 cat:"Gatos",     icon:"local_drink",          th:"teal",  pts:10,coins:8, diff:"Facil", minCount:0},
-  {id:"escovar-gatas",   name:"Escovar as gatas",                         cat:"Gatos",     icon:"spa",                  th:"pink",  pts:20,coins:12,diff:"Facil", minCount:0},
-  {id:"lista-compras",   name:"Fazer a lista de compras",                 cat:"Compras",   icon:"list_alt",             th:"violet",pts:20,coins:12,diff:"Facil", minCount:0},
+  {id:"guardar-louca",   name:"Guardar a lou\u00e7a da m\u00e1quina",     cat:"Cozinha",   icon:"restaurant",           th:"blue",  diff:"Facil", annoy:"Paia",minCount:0},
+  {id:"botar-louca",     name:"Botar a lou\u00e7a na m\u00e1quina",       cat:"Cozinha",   icon:"dishwasher",           th:"blue",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"passar-aecio",    name:"Passar o A\u00e9cio",                       cat:"Geral",     icon:"smart_toy",            th:"teal",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"colocar-roupa",   name:"Colocar roupas na m\u00e1quina",           cat:"Lavanderia",icon:"local_laundry_service",th:"blue",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"estender-roupas", name:"Estender as roupas",                       cat:"Lavanderia",icon:"dry_cleaning",         th:"teal",  diff:"Facil", annoy:"Paia",minCount:0},
+  {id:"guardar-roupas",  name:"Guardar roupas",                           cat:"Lavanderia",icon:"checkroom",            th:"pink",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"trocar-toalhas",  name:"Trocar toalhas",                           cat:"Banheiro",  icon:"towel",                th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"trocar-cama",     name:"Trocar roupa de cama",                     cat:"Quarto",    icon:"king_bed",             th:"purple",diff:"Dificil",annoy:"Paia",minCount:0},
+  {id:"superficies",     name:"Tirar sujeira das superf\u00edcies",       cat:"Geral",     icon:"countertops",          th:"orange",diff:"Media", annoy:"Ok",  minCount:0},
+  {id:"tirar-lixo",      name:"Tirar o lixo",                             cat:"Geral",     icon:"delete",               th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"levar-lixo",      name:"Levar o lixo pra baixo",                  cat:"Geral",     icon:"recycling",            th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"regar-plantas",   name:"Regar plantas",                            cat:"Geral",     icon:"yard",                 th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"organizar",       name:"Organizar bagu\u00e7as superficiais",      cat:"Geral",     icon:"inventory_2",          th:"orange",diff:"Media", annoy:"Ok",  minCount:0},
+  {id:"cozinhar",        name:"Cozinhar",                                 cat:"Cozinha",   icon:"cooking",              th:"orange",diff:"Media", annoy:"Ok",  minCount:0},
+  {id:"limpar-geladeira",name:"Limpar a geladeira",                       cat:"Cozinha",   icon:"kitchen",              th:"blue",  diff:"Dificil",annoy:"Ok",  minCount:0},
+  {id:"limpar-fogao",    name:"Limpar o fog\u00e3o",                      cat:"Cozinha",   icon:"mode_heat",            th:"orange",diff:"Media", annoy:"Paia",minCount:0},
+  {id:"limpar-pia",      name:"Limpar a pia",                             cat:"Cozinha",   icon:"water_drop",           th:"teal",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"limpar-espelhos", name:"Limpar espelhos",                          cat:"Banheiro",  icon:"light_mode",           th:"blue",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"limpar-vaso",     name:"Limpar vaso",                              cat:"Banheiro",  icon:"plumbing",             th:"purple",diff:"Media", annoy:"Pqp", minCount:0},
+  {id:"limpar-caixa",    name:"Limpar a caixa de areia",                  cat:"Gatos",     icon:"cleaning_services",    th:"orange",diff:"Facil", annoy:"Paia",minCount:0},
+  {id:"trocar-areia",    name:"Trocar areia e lavar a caixa",             cat:"Gatos",     icon:"recycling",            th:"teal",  diff:"Dificil",annoy:"Ok",  minCount:0},
+  {id:"lavar-pote",      name:"Lavar pote de \u00e1gua",                  cat:"Gatos",     icon:"water_drop",           th:"blue",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"dar-comida",      name:"Dar comida pras gatas",                    cat:"Gatos",     icon:"pets",                 th:"green", diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"dar-agua",        name:"Dar \u00e1gua pras gatas",                 cat:"Gatos",     icon:"local_drink",          th:"teal",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"escovar-gatas",   name:"Escovar as gatas",                         cat:"Gatos",     icon:"spa",                  th:"pink",  diff:"Facil", annoy:"Ok",  minCount:0},
+  {id:"lista-compras",   name:"Fazer a lista de compras",                 cat:"Compras",   icon:"list_alt",             th:"violet",diff:"Facil", annoy:"Ok",  minCount:0},
 ]
 const MKT_DEFAULT=[
   {id:"filme",  name:"Escolher o filme",        icon:"movie",           th:"violet",cost:50, tier:"Baixo"},
@@ -60,24 +83,22 @@ const MKT_DEFAULT=[
   {id:"sobre",  name:"Sobremesa especial",      icon:"cake",            th:"pink",  cost:100,tier:"Medio"},
   {id:"massa",  name:"Vale massagem",           icon:"spa",             th:"purple",cost:200,tier:"Medio"},
   {id:"date",   name:"Vale date",               icon:"favorite",        th:"pink",  cost:400,tier:"Alto"},
-  {id:"folga",  name:"Folga da lou\u00e7a (1 sem.)", icon:"restaurant", th:"violet",cost:350,tier:"Alto"},
+  {id:"folga",  name:"Folga da lou\u00e7a",     icon:"restaurant",      th:"violet",cost:350,tier:"Alto"},
   {id:"passeio",name:"Passeio do fim de semana",icon:"hiking",          th:"teal",  cost:500,tier:"Alto"},
 ]
 const ACHS=[
-  {id:"first",   label:"1\u00ba Lugar",        icon:"emoji_events",         th:"violet",desc:"Ganhe o ranking do m\u00eas",   ok:s=>s.wins>=1},
-  {id:"streak7", label:"7 dias seguidos",       icon:"local_fire_department",th:"orange",desc:"7 dias consecutivos",           ok:s=>s.best_streak>=7},
-  {id:"streak30",label:"30 dias!",              icon:"local_fire_department",th:"pink",  desc:"30 dias consecutivos",          ok:s=>s.best_streak>=30},
-  {id:"t100",    label:"100 tarefas",           icon:"task_alt",             th:"blue",  desc:"100 tarefas conclu\u00eddas",   ok:s=>s.tasks_done>=100},
-  {id:"t500",    label:"500 tarefas",           icon:"workspace_premium",    th:"violet",desc:"500 tarefas conclu\u00eddas",   ok:s=>s.tasks_done>=500},
-  {id:"louca10", label:"Lou\u00e7a Mestre",     icon:"dishwasher",           th:"blue",  desc:"Guardou a lou\u00e7a 10\u00d7", ok:s=>(s.task_counts?.["guardar-louca"]||0)>=10},
-  {id:"gatas10", label:"Cat Parent",            icon:"pets",                 th:"green", desc:"Cuidou das gatas 10\u00d7",     ok:s=>(s.task_counts?.["dar-comida"]||0)>=10},
-  {id:"chef10",  label:"Chef de Casa",          icon:"cooking",              th:"orange",desc:"Cozinhou 10\u00d7",             ok:s=>(s.task_counts?.["cozinhar"]||0)>=10},
+  {id:"first",   label:"1\u00ba Lugar",       icon:"emoji_events",         th:"violet",desc:"Ganhe o ranking do m\u00eas",   ok:s=>s.wins>=1},
+  {id:"streak7", label:"7 dias seguidos",      icon:"local_fire_department",th:"orange",desc:"7 dias consecutivos",           ok:s=>s.best_streak>=7},
+  {id:"streak30",label:"30 dias!",             icon:"local_fire_department",th:"pink",  desc:"30 dias consecutivos",          ok:s=>s.best_streak>=30},
+  {id:"t100",    label:"100 tarefas",          icon:"task_alt",             th:"blue",  desc:"100 tarefas conclu\u00eddas",   ok:s=>s.tasks_done>=100},
+  {id:"t500",    label:"500 tarefas",          icon:"workspace_premium",    th:"violet",desc:"500 tarefas conclu\u00eddas",   ok:s=>s.tasks_done>=500},
+  {id:"louca10", label:"Lou\u00e7a Mestre",    icon:"dishwasher",           th:"blue",  desc:"Guardou a lou\u00e7a 10\u00d7", ok:s=>(s.task_counts?.["guardar-louca"]||0)>=10},
+  {id:"gatas10", label:"Cat Parent",           icon:"pets",                 th:"green", desc:"Cuidou das gatas 10\u00d7",     ok:s=>(s.task_counts?.["dar-comida"]||0)>=10},
+  {id:"chef10",  label:"Chef de Casa",         icon:"cooking",              th:"orange",desc:"Cozinhou 10\u00d7",             ok:s=>(s.task_counts?.["cozinhar"]||0)>=10},
 ]
 const TITLES=[{min:500,t:"Lenda da Casa"},{min:100,t:"Faxineiro Lend\u00e1rio"},{min:50,t:"Mestre de Casa"},{min:10,t:"Faxineiro Jr."},{min:0,t:"Iniciante"}]
 const ICON_OPTIONS=["restaurant","dishwasher","smart_toy","local_laundry_service","dry_cleaning","checkroom","towel","king_bed","countertops","delete","recycling","yard","inventory_2","cooking","kitchen","mode_heat","water_drop","light_mode","plumbing","cleaning_services","pets","local_drink","spa","list_alt","shopping_cart","bathtub","favorite","movie","hiking","cake","local_cafe","task_alt","home","star","bolt","emoji_events","card_giftcard","settings_remote","restaurant_menu","sports_esports","fitness_center","music_note","handyman","local_florist","iron","vacuum"]
 const THEMES_LIST=["blue","green","purple","orange","teal","pink","violet"]
-const DIFF_LIST=["Facil","Media","Dificil"]
-const DIFF_LBL={Facil:"F\u00e1cil",Media:"M\u00e9dia",Dificil:"Dif\u00edcil"}
 const TIER_LIST=["Baixo","Medio","Alto"]
 const TIER_LBL={Baixo:"Baixo custo",Medio:"M\u00e9dio custo",Alto:"Alto custo"}
 const OLD_IDS=["lavar-louca","aspirador","lavar-roupa","dobrar-roupa","mercado","limpar-coz","cama","varrer","limpar-ban"]
@@ -86,29 +107,36 @@ const today=()=>new Date().toISOString().split("T")[0]
 const sundayWeekId=()=>{const d=new Date(),day=d.getDay(),s=new Date(d);s.setDate(d.getDate()-day);return s.toISOString().split("T")[0]}
 const nextSundayStr=()=>{const d=new Date(),days=d.getDay()===0?7:7-d.getDay(),n=new Date(d);n.setDate(d.getDate()+days);return n.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"short"})}
 const daysLeft=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth()+1,0).getDate()-d.getDate()}
-const monthName=()=>["\u0041pr","\u004a\u0061\u006e","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"][new Date().getMonth()]
 const getTitle=td=>TITLES.find(t=>td>=t.min)?.t||"Iniciante"
 const ini=n=>(n||"?")[0].toUpperCase()
 const sBon=s=>s>=30?.15:s>=15?.10:s>=7?.05:0
 const genId=()=>`id_${Date.now()}_${Math.random().toString(36).slice(2,6)}`
+const mName=()=>["\u004aan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"][new Date().getMonth()]
 const store={
   get:()=>{try{const r=localStorage.getItem("casa_v2");return r?JSON.parse(r):null}catch{return null}},
   set:v=>{try{localStorage.setItem("casa_v2",JSON.stringify(v))}catch{}}
 }
 const blankStats=()=>({month_points:0,hall_points:0,coins:0,streak:0,best_streak:0,last_date:null,tasks_done:0,wins:0,task_counts:{}})
 const blankDraft=()=>({week_id:"",confirmed:false,bonus_given:false,assigns:{"0":[],"1":[]},steals_used:0})
+const blankSettings=()=>({difficulties:DEFAULT_DIFFICULTIES,annoyances:DEFAULT_ANNOYANCES})
 const blankState=()=>({
   house:{name:""},users:[{id:0,name:"",color:"blue"},{id:1,name:"",color:"pink"}],viewUser:0,
   stats:{"0":blankStats(),"1":blankStats()},draft:blankDraft(),
   history:[],unlocked:{"0":[],"1":[]},redemptions:[],library:LIB_DEFAULT,market:MKT_DEFAULT,
+  settings:blankSettings(),
 })
 const loadState=()=>{
   const s=store.get()||blankState()
   if(!s.library)s.library=LIB_DEFAULT
   if(!s.market)s.market=MKT_DEFAULT
   if(!s.redemptions)s.redemptions=[]
+  if(!s.settings)s.settings=blankSettings()
+  if(!s.settings.difficulties)s.settings.difficulties=DEFAULT_DIFFICULTIES
+  if(!s.settings.annoyances)s.settings.annoyances=DEFAULT_ANNOYANCES
   if(s.draft.steals_used===undefined)s.draft.steals_used=0
   if(s.library.some(t=>OLD_IDS.includes(t.id))){s.library=LIB_DEFAULT;s.draft=blankDraft()}
+  // migrate old tasks: add annoy if missing
+  s.library=s.library.map(t=>t.annoy?t:{...t,annoy:"Ok"})
   return s
 }
 function applyStreak(s0){
@@ -120,6 +148,7 @@ function applyStreak(s0){
 }
 const checkAchs=(stats,unlocked)=>ACHS.filter(a=>!unlocked.includes(a.id)&&a.ok(stats)).map(a=>a.id)
 
+// ── UI ATOMS ──────────────────────────────────────────────────────────────────
 function Icon({name,size=24,color,style={}}){
   return<span className="material-symbols-rounded" style={{fontSize:size,color:color||"inherit",lineHeight:1,userSelect:"none",flexShrink:0,...style}}>{name}</span>
 }
@@ -135,11 +164,18 @@ function Coin({n,size=14,color=C.goldTxt}){
 function PtsBolt({n,size=14,color=C.violet}){
   return<span style={{display:"inline-flex",alignItems:"center",gap:2,fontFamily:F.display,fontWeight:800,color}}><Icon name="bolt" size={size} color={color}/>{n}</span>
 }
-function TaskMeta({task}){
-  return<div style={{display:"flex",alignItems:"center",gap:8,fontFamily:F.body,fontWeight:800,fontSize:11.5,color:C.soft}}>
-    <span style={{color:diffColor(task.diff)}}>{DIFF_LBL[task.diff]||task.diff}</span>
-    <PtsBolt n={task.pts} size={13}/><Coin n={task.coins} size={13}/>
-    {(task.minCount||0)>0&&<span style={{color:C.violet,fontSize:11}}>{"m\u00edn"} {task.minCount}{"\u00d7"}</span>}
+function TaskMeta({task,settings}){
+  const base=calcBase(task,settings)
+  const diffs=(settings?.difficulties)||DEFAULT_DIFFICULTIES
+  const annoys=(settings?.annoyances)||DEFAULT_ANNOYANCES
+  const dLabel=diffs.find(d=>d.key===task?.diff)?.label||task?.diff||""
+  const aLabel=annoys.find(a=>a.key===task?.annoy)?.label||task?.annoy||""
+  const aC={Ok:C.green,Paia:C.goldTxt,Pqp:C.fire,Morte:"#D93434"}[task?.annoy]||C.soft
+  return<div style={{display:"flex",alignItems:"center",gap:8,fontFamily:F.body,fontWeight:800,fontSize:11.5,color:C.soft,flexWrap:"wrap"}}>
+    <span style={{color:C.soft}}>{dLabel}</span>
+    {aLabel&&<span style={{color:aC,background:`${aC}18`,borderRadius:6,padding:"1px 6px",fontSize:10.5}}>{aLabel}</span>}
+    <PtsBolt n={base} size={13}/><Coin n={base} size={13}/>
+    {(task?.minCount||0)>0&&<span style={{color:C.violet,fontSize:11}}>m\u00edn {task.minCount}\u00d7</span>}
   </div>
 }
 function Pill({icon,value,color=C.violet,iconColor}){
@@ -222,8 +258,21 @@ function ConfirmWordModal({word,title,desc,onConfirm,onCancel,danger=false}){
     <Btn3D onClick={onConfirm} disabled={typed!==word} color={danger?"#D93434":C.violet} shadow={danger?"#A02828":C.violetSd}>Confirmar</Btn3D>
   </BottomSheet>
 }
+// Collapsible section for settings
+function Collapsible({icon,label,badge,open,onToggle,children}){
+  return<div>
+    <button onClick={onToggle} style={{width:"100%",background:open?"#F0ECFF":"#fff",border:"none",borderRadius:16,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",boxShadow:"0 2px 0 rgba(33,27,51,.05)",marginBottom:open?0:0}}>
+      <Icon name={icon} size={22} color={C.violet}/>
+      <span style={{flex:1,fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text,textAlign:"left"}}>{label}{badge!=null?` (${badge})`:""}</span>
+      <Icon name={open?"expand_less":"expand_more"} size={22} color={C.soft}/>
+    </button>
+    {open&&<div style={{...C.card,borderRadius:"0 0 16px 16px",padding:"4px 14px",marginTop:-2}}>{children}</div>}
+  </div>
+}
+
 const inp={width:"100%",padding:"13px 14px",borderRadius:14,border:"2px solid #E3DDF1",fontFamily:"'Nunito',system-ui",fontWeight:700,fontSize:15,color:"#211B33",outline:"none",boxSizing:"border-box",background:"#fff",marginBottom:12,display:"block"}
 const lbl={fontFamily:"'Nunito',system-ui",fontSize:12,fontWeight:800,color:"#6E6688",margin:"0 0 5px 3px",display:"block"}
+
 function IconPicker({value,onChange}){
   const[open,setOpen]=useState(false)
   return<>
@@ -245,8 +294,13 @@ function IconPicker({value,onChange}){
     </BottomSheet>}
   </>
 }
-function TaskForm({initial={},onSave}){
-  const[v,setV]=useState({name:"",cat:"Geral",icon:"task_alt",th:"blue",pts:20,coins:12,diff:"Facil",minCount:0,...initial})
+
+function TaskForm({initial={},onSave,settings}){
+  const diffs=(settings?.difficulties)||DEFAULT_DIFFICULTIES
+  const annoys=(settings?.annoyances)||DEFAULT_ANNOYANCES
+  const[v,setV]=useState({name:"",cat:"Geral",icon:"task_alt",th:"blue",diff:"Facil",annoy:"Ok",minCount:0,...initial})
+  const base=calcBase(v,settings)
+  const aC={Ok:C.green,Paia:C.goldTxt,Pqp:C.fire,Morte:"#D93434"}
   return<div>
     <label style={lbl}>NOME</label>
     <input value={v.name} onChange={e=>setV(p=>({...p,name:e.target.value}))} placeholder={"Ex: Lavar lou\u00e7a"} style={inp}/>
@@ -255,20 +309,26 @@ function TaskForm({initial={},onSave}){
     <IconPicker value={v.icon} onChange={ic=>setV(p=>({...p,icon:ic}))}/>
     <label style={lbl}>TEMA</label>
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-      {THEMES_LIST.map(t=><button key={t} onClick={()=>setV(p=>({...p,th:t}))} style={{width:32,height:32,borderRadius:10,background:GRADS[t],border:v.th===t?"3px solid #211B33":"3px solid transparent",cursor:"pointer",boxShadow:`0 3px 0 ${GRADSD[t]}`}}/>)}
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
-      <div><label style={lbl}>PONTOS</label><input type="number" value={v.pts} onChange={e=>setV(p=>({...p,pts:+e.target.value}))} style={{...inp,marginBottom:0}}/></div>
-      <div><label style={lbl}>MOEDAS</label><input type="number" value={v.coins} onChange={e=>setV(p=>({...p,coins:+e.target.value}))} style={{...inp,marginBottom:0}}/></div>
-      <div><label style={lbl}>{"\u004d\u00cdN/SEM."}</label><input type="number" value={v.minCount} min="0" onChange={e=>setV(p=>({...p,minCount:+e.target.value}))} style={{...inp,marginBottom:0}}/></div>
+      {["blue","green","purple","orange","teal","pink","violet"].map(t=><button key={t} onClick={()=>setV(p=>({...p,th:t}))} style={{width:32,height:32,borderRadius:10,background:GRADS[t],border:v.th===t?"3px solid #211B33":"3px solid transparent",cursor:"pointer",boxShadow:`0 3px 0 ${GRADSD[t]}`}}/>)}
     </div>
     <label style={lbl}>DIFICULDADE</label>
-    <select value={v.diff} onChange={e=>setV(p=>({...p,diff:e.target.value}))} style={{...inp,appearance:"none"}}>
-      {DIFF_LIST.map(d=><option key={d} value={d}>{DIFF_LBL[d]}</option>)}
-    </select>
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+      {diffs.map(d=><button key={d.key} onClick={()=>setV(p=>({...p,diff:d.key}))} style={{flex:1,minWidth:70,padding:"8px 4px",borderRadius:12,border:"none",background:v.diff===d.key?C.violet:"#F0ECFF",color:v.diff===d.key?"#fff":C.violet,fontFamily:F.body,fontWeight:800,fontSize:13,cursor:"pointer"}}>{d.label}<br/><span style={{fontSize:10,opacity:.8}}>{d.pts}pts</span></button>)}
+    </div>
+    <label style={lbl}>CHATICE</label>
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+      {annoys.map(a=>{const col=aC[a.key]||C.soft;return<button key={a.key} onClick={()=>setV(p=>({...p,annoy:a.key}))} style={{flex:1,minWidth:60,padding:"8px 4px",borderRadius:12,border:"none",background:v.annoy===a.key?col:"#F8F6FB",color:v.annoy===a.key?"#fff":col,fontFamily:F.body,fontWeight:800,fontSize:13,cursor:"pointer"}}>{a.label}<br/><span style={{fontSize:10,opacity:.8}}>{a.mult}\u00d7</span></button>})}
+    </div>
+    <div style={{background:"#F0ECFF",borderRadius:14,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:8}}>
+      <Icon name="bolt" size={18} color={C.violet}/>
+      <span style={{fontFamily:F.display,fontWeight:800,fontSize:15,color:C.violet}}>{base} pts e {base} moedas</span>
+    </div>
+    <label style={lbl}>{"M\u00cdN/SEM. (0 = opcional)"}</label>
+    <input type="number" value={v.minCount} min="0" onChange={e=>setV(p=>({...p,minCount:+e.target.value}))} style={inp}/>
     <Btn3D onClick={()=>v.name.trim()&&onSave({...v})} disabled={!v.name.trim()}>Salvar tarefa</Btn3D>
   </div>
 }
+
 function RewardForm({initial={},onSave}){
   const[v,setV]=useState({name:"",icon:"card_giftcard",th:"violet",cost:100,tier:"Medio",...initial})
   return<div>
@@ -277,7 +337,7 @@ function RewardForm({initial={},onSave}){
     <IconPicker value={v.icon} onChange={ic=>setV(p=>({...p,icon:ic}))}/>
     <label style={lbl}>TEMA</label>
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-      {THEMES_LIST.map(t=><button key={t} onClick={()=>setV(p=>({...p,th:t}))} style={{width:32,height:32,borderRadius:10,background:GRADS[t],border:v.th===t?"3px solid #211B33":"3px solid transparent",cursor:"pointer",boxShadow:`0 3px 0 ${GRADSD[t]}`}}/>)}
+      {["blue","green","purple","orange","teal","pink","violet"].map(t=><button key={t} onClick={()=>setV(p=>({...p,th:t}))} style={{width:32,height:32,borderRadius:10,background:GRADS[t],border:v.th===t?"3px solid #211B33":"3px solid transparent",cursor:"pointer",boxShadow:`0 3px 0 ${GRADSD[t]}`}}/>)}
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
       <div><label style={lbl}>CUSTO (moedas)</label><input type="number" value={v.cost} onChange={e=>setV(p=>({...p,cost:+e.target.value}))} style={{...inp,marginBottom:0}}/></div>
@@ -291,9 +351,9 @@ function RewardForm({initial={},onSave}){
   </div>
 }
 
-function Onboarding({onDone}){
+function Onboarding({onDone,settings}){
   const[step,setStep]=useState(0),[house,setHouse]=useState(""),[myName,setMyName]=useState(""),[pairName,setPairName]=useState(""),[assigns,setAssigns]=useState({})
-  const totalPts=Object.entries(assigns).reduce((a,[id,n])=>{const t=LIB_DEFAULT.find(t=>t.id===id);return a+(t?t.pts*n:0)},0)
+  const totalPts=Object.entries(assigns).reduce((a,[id,n])=>{const t=LIB_DEFAULT.find(t=>t.id===id);return a+(t?calcBase(t,settings)*n:0)},0)
   const taskCount=Object.values(assigns).filter(n=>n>0).length
   const fi={width:"100%",padding:"15px 16px",borderRadius:16,border:"2px solid #E3DDF1",fontFamily:"'Nunito',system-ui",fontWeight:700,fontSize:16,color:C.text,outline:"none",boxSizing:"border-box",background:"#fff",display:"block"}
   const fl={fontFamily:"'Nunito',system-ui",fontSize:12.5,fontWeight:800,color:"#6E6688",margin:"0 0 7px 4px",display:"block"}
@@ -304,7 +364,7 @@ function Onboarding({onDone}){
       <div style={{fontFamily:F.display,fontWeight:800,fontSize:34,color:C.text}}>Casa</div>
       <div style={{fontFamily:F.body,fontWeight:700,fontSize:16,color:"#6E6688",marginTop:8,maxWidth:280,lineHeight:1.4}}>{"Transforme as tarefas da casa numa competi\u00e7\u00e3o divertida entre voc\u00eas dois."}</div>
       <div style={{display:"flex",gap:18,margin:"34px 0"}}>
-        {[["emoji_events","Ranking",C.violet],["paid","Recompensas",C.gold],["local_fire_department","Sequências",C.fire]].map(([icon,label,col])=>(
+        {[["emoji_events","Ranking",C.violet],["paid","Recompensas",C.gold],["local_fire_department","Sequ\u00eancias",C.fire]].map(([icon,label,col])=>(
           <div key={label} style={{textAlign:"center"}}>
             <div style={{width:54,height:54,borderRadius:16,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 3px 0 rgba(0,0,0,.06)",marginBottom:6}}><Icon name={icon} size={28} color={col}/></div>
             <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft}}>{label}</div>
@@ -333,16 +393,16 @@ function Onboarding({onDone}){
     {step===2&&<div style={{flex:1,display:"flex",flexDirection:"column"}}>
       <div style={{padding:"4px 24px 14px"}}>
         <div style={{fontFamily:F.display,fontWeight:800,fontSize:26,color:C.text,lineHeight:1.15}}>{"O que voc\u00ea assume esta semana?"}</div>
-        <div style={{fontFamily:F.body,fontWeight:700,fontSize:14,color:C.soft,marginTop:4}}>Toque para adicionar. Ajuste a quantidade depois.</div>
+        <div style={{fontFamily:F.body,fontWeight:700,fontSize:14,color:C.soft,marginTop:4}}>Toque para adicionar.</div>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"0 16px",display:"flex",flexDirection:"column",gap:10,paddingBottom:130}}>
         {LIB_DEFAULT.map(task=>{
-          const n=assigns[task.id]||0
+          const n=assigns[task.id]||0,base=calcBase(task,settings)
           return<div key={task.id} style={{...C.card,padding:"13px 16px",display:"flex",alignItems:"center",gap:12}}>
             <TaskIcon task={task}/>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{task.name}</div>
-              <TaskMeta task={task}/>
+              <TaskMeta task={task} settings={settings}/>
             </div>
             {n===0
               ?<button onClick={()=>setAssigns({...assigns,[task.id]:1})} style={{background:"none",color:C.violet,border:`2px solid ${C.violet}`,borderRadius:12,padding:"7px 12px",fontFamily:F.display,fontWeight:800,fontSize:13,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>+ Assumir</button>
@@ -357,7 +417,6 @@ function Onboarding({onDone}){
       <div style={{position:"fixed",bottom:0,left:0,right:0,maxWidth:430,margin:"0 auto",background:"#fff",borderTop:"1px solid #EFEBF8",padding:"12px 16px 28px",display:"flex",alignItems:"center",gap:10}}>
         <div style={{flex:1,lineHeight:1.2}}>
           <div style={{fontFamily:F.display,fontWeight:800,fontSize:16,color:C.text}}>{taskCount} tarefa{taskCount!==1?"s":""} {"\u00b7"} {totalPts} pts</div>
-          <div style={{fontFamily:F.body,fontWeight:700,fontSize:12,color:C.soft}}>previstos na sua semana</div>
         </div>
         <Btn3D onClick={()=>onDone({house,myName,pairName,assigns})} disabled={taskCount===0} style={{width:"auto",padding:"14px 22px"}}>{"Come\u00e7ar"}</Btn3D>
       </div>
@@ -366,7 +425,7 @@ function Onboarding({onDone}){
 }
 
 function HomeScreen({state,dispatch,onOpenSettings}){
-  const u0=state.stats["0"],u1=state.stats["1"],me=state.users[0],pair=state.users[1]
+  const u0=state.stats["0"],u1=state.stats["1"],me=state.users[0],pair=state.users[1],settings=state.settings
   const total=u0.month_points+u1.month_points
   let myPct=total>0?Math.round(u0.month_points/total*100):50;myPct=Math.max(12,Math.min(88,myPct))
   const iLead=u0.month_points>=u1.month_points,isTie=u0.month_points===u1.month_points,diff=Math.abs(u0.month_points-u1.month_points)
@@ -377,8 +436,6 @@ function HomeScreen({state,dispatch,onOpenSettings}){
   const myTotal=myAssigns.reduce((a,x)=>a+x.count,0),myDone=myAssigns.reduce((a,x)=>a+(x.done||0),0)
   const commitment=myTotal>0?Math.round(myDone/myTotal*100):null
   const myUnlocked=state.unlocked?.["0"]||[],lastAch=myUnlocked.length>0?ACHS.find(a=>a.id===myUnlocked[myUnlocked.length-1]):null
-  const monthsArr=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
-  const mName=monthsArr[new Date().getMonth()]
   const Avatar=({grad,sd,name,size=64,fs=28,crown})=>(
     <div style={{position:"relative",width:size,margin:"0 auto 6px"}}>
       {crown&&<Icon name="crown" size={Math.round(size*.34)} color={C.gold} style={{position:"absolute",top:Math.round(-size*.27),left:"50%",transform:"translateX(-50%)"}}/>}
@@ -400,7 +457,7 @@ function HomeScreen({state,dispatch,onOpenSettings}){
     </div>
     <Card>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:7}}><Icon name="emoji_events" size={22} color={C.violet}/><span style={{fontFamily:F.display,fontWeight:700,fontSize:17,color:C.text}}>Ranking de {mName}</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:7}}><Icon name="emoji_events" size={22} color={C.violet}/><span style={{fontFamily:F.display,fontWeight:700,fontSize:17,color:C.text}}>Ranking de {mName()}</span></div>
         <div style={{display:"flex",alignItems:"center",gap:4,background:C.bg,borderRadius:999,padding:"5px 10px"}}><Icon name="schedule" size={15} color={C.soft}/><span style={{fontFamily:F.body,fontSize:12.5,fontWeight:800,color:C.soft}}>{daysLeft()} dias</span></div>
       </div>
       <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:8}}>
@@ -446,7 +503,8 @@ function HomeScreen({state,dispatch,onOpenSettings}){
             <div style={{fontFamily:F.body,fontSize:12.5,fontWeight:700,color:C.soft}}>{nextTaskData.cat}{nextTask.count>1?` \u00b7 ${nextTask.done||0}/${nextTask.count}`:""}</div>
           </div>
           <div style={{textAlign:"right",display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
-            <PtsBolt n={`+${nextTaskData.pts}`} size={16}/><Coin n={`+${nextTaskData.coins}`} size={16}/>
+            <PtsBolt n={`+${calcBase(nextTaskData,settings)}`} size={16}/>
+            <Coin n={`+${calcBase(nextTaskData,settings)}`} size={16}/>
           </div>
         </div>
         <Btn3D onClick={()=>{if(navigator.vibrate)navigator.vibrate(8);dispatch({type:"COMPLETE",userId:"0",taskId:nextTask.id})}}>Concluir tarefa</Btn3D>
@@ -473,16 +531,27 @@ function HomeScreen({state,dispatch,onOpenSettings}){
 
 function SettingsScreen({state,dispatch,onClose}){
   const[house,setHouse]=useState(state.house.name),[name0,setName0]=useState(state.users[0].name),[name1,setName1]=useState(state.users[1].name)
-  const[taskSheet,setTaskSheet]=useState(null),[rewardSheet,setRewardSheet]=useState(null),[confirmDel,setConfirmDel]=useState(null),[resetModal,setResetModal]=useState(null)
+  const[expanded,setExpanded]=useState({library:false,market:false,difficulties:false,annoyances:false})
+  const toggle=k=>setExpanded(p=>({...p,[k]:!p[k]}))
+  const settings=state.settings||{difficulties:DEFAULT_DIFFICULTIES,annoyances:DEFAULT_ANNOYANCES}
+  const[diffs,setDiffs]=useState(settings.difficulties)
+  const[annoys,setAnnoys]=useState(settings.annoyances)
+  const[taskSheet,setTaskSheet]=useState(null)
+  const[rewardSheet,setRewardSheet]=useState(null)
+  const[confirmDel,setConfirmDel]=useState(null)
+  const[resetModal,setResetModal]=useState(null)
   const saveNames=()=>dispatch({type:"UPDATE_SETTINGS",house:house.trim()||state.house.name,name0:name0.trim()||state.users[0].name,name1:name1.trim()||state.users[1].name})
+  const saveGameSettings=()=>dispatch({type:"UPDATE_GAME_SETTINGS",settings:{difficulties:diffs,annoyances:annoys}})
   return<div style={{position:"fixed",inset:0,background:C.bg,zIndex:900,overflowY:"auto",maxWidth:430,margin:"0 auto"}}>
-    <div style={{padding:"calc(env(safe-area-inset-top,20px) + 14px) 16px 100px",display:"flex",flexDirection:"column",gap:16}}>
+    <div style={{padding:"calc(env(safe-area-inset-top,20px) + 14px) 16px 100px",display:"flex",flexDirection:"column",gap:12}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <button onClick={onClose} style={{width:40,height:40,borderRadius:12,background:"#fff",border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 0 rgba(33,27,51,.06)",cursor:"pointer"}}><Icon name="arrow_back" size={22} color={C.text}/></button>
         <span style={{fontFamily:F.display,fontWeight:700,fontSize:22,color:C.text}}>{"Configura\u00e7\u00f5es"}</span>
       </div>
-      <SectionLabel>A casa</SectionLabel>
+
+      {/* Casa */}
       <Card style={{padding:16}}>
+        <div style={{fontFamily:F.display,fontWeight:700,fontSize:16,color:C.text,marginBottom:14}}>A casa</div>
         <label style={lbl}>NOME DA CASA</label>
         <input value={house} onChange={e=>setHouse(e.target.value)} style={inp}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
@@ -509,44 +578,84 @@ function SettingsScreen({state,dispatch,onClose}){
           </button>
         </div>
       </Card>
-      <SectionLabel>Biblioteca de tarefas</SectionLabel>
-      <div style={{...C.card,padding:"4px 14px"}}>
+
+      {/* Biblioteca - collapsible */}
+      <Collapsible icon="list_alt" label="Biblioteca de tarefas" badge={state.library.length} open={expanded.library} onToggle={()=>toggle("library")}>
         {state.library.map((task,i)=>(
-          <div key={task.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:i<state.library.length-1?"1px solid #F2EEFA":"none"}}>
+          <div key={task.id} onClick={()=>setTaskSheet(task)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:i<state.library.length-1?"1px solid #F2EEFA":"none",cursor:"pointer"}}>
             <TaskIcon task={task} size={38}/>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:F.display,fontWeight:700,fontSize:14,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{task.name}</div>
-              <div style={{fontFamily:F.body,fontSize:11,fontWeight:700,color:C.soft}}>{task.cat} {"\u00b7"} {task.pts}pts{(task.minCount||0)>0?` \u00b7 m\u00edn ${task.minCount}\u00d7`:""}</div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:700,color:C.soft}}>{task.cat} {"\u00b7"} {calcBase(task,settings)}pts{(task.minCount||0)>0?` \u00b7 m\u00edn ${task.minCount}\u00d7`:""}</div>
             </div>
-            <button onClick={()=>setTaskSheet(task)} style={{width:32,height:32,borderRadius:10,background:"#F0ECFF",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="edit" size={16} color={C.violet}/></button>
-            <button onClick={()=>setConfirmDel({type:"task",id:task.id})} style={{width:32,height:32,borderRadius:10,background:"#FFF0F0",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="delete" size={16} color="#D93434"/></button>
+            <button onClick={e=>{e.stopPropagation();setConfirmDel({type:"task",id:task.id})}} style={{width:32,height:32,borderRadius:10,background:"#FFF0F0",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="delete" size={16} color="#D93434"/></button>
           </div>
         ))}
-      </div>
-      <button onClick={()=>setTaskSheet("new")} style={{background:"#fff",border:`2px dashed ${C.violet}`,borderRadius:16,padding:"13px 0",fontFamily:F.display,fontWeight:800,fontSize:15,color:C.violet,cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-        <Icon name="add" size={20} color={C.violet}/>Adicionar tarefa
-      </button>
-      <SectionLabel>Recompensas do Market</SectionLabel>
-      <div style={{...C.card,padding:"4px 14px"}}>
+        <button onClick={()=>setTaskSheet("new")} style={{background:"none",border:`2px dashed ${C.violet}`,borderRadius:12,padding:"11px 0",fontFamily:F.display,fontWeight:800,fontSize:14,color:C.violet,cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:6,margin:"10px 0 4px"}}>
+          <Icon name="add" size={18} color={C.violet}/>Adicionar tarefa
+        </button>
+      </Collapsible>
+
+      {/* Market - collapsible */}
+      <Collapsible icon="storefront" label="Recompensas do Market" badge={state.market.length} open={expanded.market} onToggle={()=>toggle("market")}>
         {state.market.map((r,i)=>{
           const th=TH[r.th]||TH.violet
-          return<div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:i<state.market.length-1?"1px solid #F2EEFA":"none"}}>
+          return<div key={r.id} onClick={()=>setRewardSheet(r)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:i<state.market.length-1?"1px solid #F2EEFA":"none",cursor:"pointer"}}>
             <div style={{width:38,height:38,borderRadius:12,background:th.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 2px 0 ${th.sd}`}}><Icon name={r.icon||"card_giftcard"} size={20} color={th.fg}/></div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:F.display,fontWeight:700,fontSize:14,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.name}</div>
               <Coin n={r.cost} size={12}/>
             </div>
-            <button onClick={()=>setRewardSheet(r)} style={{width:32,height:32,borderRadius:10,background:"#F0ECFF",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="edit" size={16} color={C.violet}/></button>
-            <button onClick={()=>setConfirmDel({type:"reward",id:r.id})} style={{width:32,height:32,borderRadius:10,background:"#FFF0F0",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="delete" size={16} color="#D93434"/></button>
+            <button onClick={e=>{e.stopPropagation();setConfirmDel({type:"reward",id:r.id})}} style={{width:32,height:32,borderRadius:10,background:"#FFF0F0",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="delete" size={16} color="#D93434"/></button>
           </div>
         })}
-      </div>
-      <button onClick={()=>setRewardSheet("new")} style={{background:"#fff",border:`2px dashed ${C.violet}`,borderRadius:16,padding:"13px 0",fontFamily:F.display,fontWeight:800,fontSize:15,color:C.violet,cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-        <Icon name="add" size={20} color={C.violet}/>Adicionar recompensa
-      </button>
+        <button onClick={()=>setRewardSheet("new")} style={{background:"none",border:`2px dashed ${C.violet}`,borderRadius:12,padding:"11px 0",fontFamily:F.display,fontWeight:800,fontSize:14,color:C.violet,cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:6,margin:"10px 0 4px"}}>
+          <Icon name="add" size={18} color={C.violet}/>Adicionar recompensa
+        </button>
+      </Collapsible>
+
+      {/* Dificuldades - collapsible */}
+      <Collapsible icon="signal_cellular_alt" label="Dificuldades" open={expanded.difficulties} onToggle={()=>toggle("difficulties")}>
+        {diffs.map((d,i)=>(
+          <div key={d.key} style={{display:"grid",gridTemplateColumns:"1fr 80px",gap:8,padding:"10px 0",borderBottom:i<diffs.length-1?"1px solid #F2EEFA":"none",alignItems:"center"}}>
+            <div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft,marginBottom:4}}>{d.key}</div>
+              <input value={d.label} onChange={e=>setDiffs(prev=>prev.map((x,j)=>j===i?{...x,label:e.target.value}:x))}
+                style={{...inp,marginBottom:0,padding:"8px 10px",fontSize:13}}/>
+            </div>
+            <div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft,marginBottom:4}}>pts base</div>
+              <input type="number" value={d.pts} onChange={e=>setDiffs(prev=>prev.map((x,j)=>j===i?{...x,pts:+e.target.value}:x))}
+                style={{...inp,marginBottom:0,padding:"8px 10px",fontSize:13}}/>
+            </div>
+          </div>
+        ))}
+        <div style={{marginTop:10,marginBottom:4}}><Btn3D onClick={saveGameSettings} small>Salvar dificuldades</Btn3D></div>
+      </Collapsible>
+
+      {/* Chatices - collapsible */}
+      <Collapsible icon="sentiment_very_dissatisfied" label="Chatices" open={expanded.annoyances} onToggle={()=>toggle("annoyances")}>
+        {annoys.map((a,i)=>{
+          const cols=["#27C26E","#E0900A","#FF7A1A","#D93434"]
+          return<div key={a.key} style={{display:"grid",gridTemplateColumns:"1fr 80px",gap:8,padding:"10px 0",borderBottom:i<annoys.length-1?"1px solid #F2EEFA":"none",alignItems:"center"}}>
+            <div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:cols[i]||C.soft,marginBottom:4}}>{a.key}</div>
+              <input value={a.label} onChange={e=>setAnnoys(prev=>prev.map((x,j)=>j===i?{...x,label:e.target.value}:x))}
+                style={{...inp,marginBottom:0,padding:"8px 10px",fontSize:13}}/>
+            </div>
+            <div>
+              <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft,marginBottom:4}}>multiplier</div>
+              <input type="number" step="0.1" value={a.mult} onChange={e=>setAnnoys(prev=>prev.map((x,j)=>j===i?{...x,mult:+e.target.value}:x))}
+                style={{...inp,marginBottom:0,padding:"8px 10px",fontSize:13}}/>
+            </div>
+          </div>
+        })}
+        <div style={{marginTop:10,marginBottom:4}}><Btn3D onClick={saveGameSettings} small>Salvar chatices</Btn3D></div>
+      </Collapsible>
     </div>
+
     {taskSheet&&<BottomSheet title={taskSheet==="new"?"Nova tarefa":"Editar tarefa"} onClose={()=>setTaskSheet(null)}>
-      <TaskForm initial={taskSheet==="new"?{}:taskSheet} onSave={data=>{dispatch(taskSheet==="new"?{type:"ADD_TASK",task:{...data,id:genId()}}:{type:"EDIT_TASK",taskId:taskSheet.id,updates:data});setTaskSheet(null)}}/>
+      <TaskForm initial={taskSheet==="new"?{}:taskSheet} settings={settings} onSave={data=>{dispatch(taskSheet==="new"?{type:"ADD_TASK",task:{...data,id:genId()}}:{type:"EDIT_TASK",taskId:taskSheet.id,updates:data});setTaskSheet(null)}}/>
     </BottomSheet>}
     {rewardSheet&&<BottomSheet title={rewardSheet==="new"?"Nova recompensa":"Editar recompensa"} onClose={()=>setRewardSheet(null)}>
       <RewardForm initial={rewardSheet==="new"?{}:rewardSheet} onSave={data=>{dispatch(rewardSheet==="new"?{type:"ADD_REWARD",reward:{...data,id:genId()}}:{type:"EDIT_REWARD",rewardId:rewardSheet.id,updates:data});setRewardSheet(null)}}/>
@@ -556,20 +665,20 @@ function SettingsScreen({state,dispatch,onClose}){
       onCancel={()=>setConfirmDel(null)}/>}
     {resetModal==="week"&&<ConfirmWordModal word="SEMANA" title="Resetar a semana?" desc={"O draft e os progressos desta semana ser\u00e3o apagados. Hist\u00f3rico e pontos ficam intactos."} danger
       onConfirm={()=>{dispatch({type:"RESET_WEEK"});setResetModal(null)}} onCancel={()=>setResetModal(null)}/>}
-    {resetModal==="all"&&<ConfirmWordModal word="APAGAR" title="Apagar tudo?" desc={"Todos os dados ser\u00e3o perdidos permanentemente: pontos, hist\u00f3rico, moedas e configura\u00e7\u00f5es."} danger
+    {resetModal==="all"&&<ConfirmWordModal word="APAGAR" title="Apagar tudo?" desc={"Todos os dados ser\u00e3o perdidos permanentemente."} danger
       onConfirm={()=>{dispatch({type:"RESET"});setResetModal(null);onClose()}} onCancel={()=>setResetModal(null)}/>}
   </div>
 }
 
 function DraftScreen({state,dispatch}){
   const[showU,setShowU]=useState(0),[confirmUnassign,setConfirmUnassign]=useState(null),[confirmSteal,setConfirmSteal]=useState(null)
-  const lib=state.library,a0=state.draft.assigns?.["0"]||[],a1=state.draft.assigns?.["1"]||[]
+  const lib=state.library,settings=state.settings,a0=state.draft.assigns?.["0"]||[],a1=state.draft.assigns?.["1"]||[]
   const draftLocked=state.draft.confirmed&&state.draft.week_id===sundayWeekId()
   const stealsUsed=state.draft.steals_used||0,myCoins=state.stats["0"].coins
-  const pts0=a0.reduce((a,x)=>a+x.count*(lib.find(t=>t.id===x.id)?.pts||0),0)
-  const pts1=a1.reduce((a,x)=>a+x.count*(lib.find(t=>t.id===x.id)?.pts||0),0)
+  const pts0=a0.reduce((a,x)=>{const t=lib.find(t=>t.id===x.id);return a+(t?calcBase(t,settings)*x.count:0)},0)
+  const pts1=a1.reduce((a,x)=>{const t=lib.find(t=>t.id===x.id);return a+(t?calcBase(t,settings)*x.count:0)},0)
   const cnt0=a0.reduce((a,x)=>a+x.count,0),cnt1=a1.reduce((a,x)=>a+x.count,0)
-  const ptsMax=Math.max(pts0,pts1,1),balanced=Math.abs(pts0-pts1)<=40
+  const ptsMax=Math.max(pts0,pts1,1),balanced=Math.abs(pts0-pts1)<=20
   const missingReq=lib.filter(t=>(t.minCount||0)>0).filter(task=>{
     const t0=a0.find(a=>a.id===task.id)?.count||0,t1=a1.find(a=>a.id===task.id)?.count||0
     return t0+t1<task.minCount
@@ -603,7 +712,7 @@ function DraftScreen({state,dispatch}){
       ))}
       {missingReq.length>0&&<div style={{marginTop:12,padding:"8px 12px",background:"#FFF1E6",borderRadius:12}}>
         <div style={{fontFamily:F.body,fontWeight:800,fontSize:12,color:C.fire,marginBottom:4}}>{"Faltam m\u00ednimos obrigat\u00f3rios:"}</div>
-        {missingReq.map(t=><div key={t.id} style={{fontFamily:F.body,fontSize:12,color:C.fire}}>{"\u2022"} {t.name} (m{"\u00ed"}n {t.minCount}{"\u00d7"})</div>)}
+        {missingReq.map(t=><div key={t.id} style={{fontFamily:F.body,fontSize:12,color:C.fire}}>{"\u2022 "}{t.name}</div>)}
       </div>}
     </Card>}
     <div style={{display:"flex",background:"#E7E2F3",borderRadius:14,padding:4,gap:4}}>
@@ -617,7 +726,8 @@ function DraftScreen({state,dispatch}){
       {currentAssigns.length===0&&<div style={{padding:"20px 0",textAlign:"center",fontFamily:F.body,fontWeight:700,fontSize:14,color:C.soft}}>Nenhuma tarefa assumida</div>}
       {currentAssigns.map((assign,i)=>{
         const task=lib.find(t=>t.id===assign.id);if(!task)return null
-        const remaining=assign.count-(assign.done||0),isMe=showU===0,cost=task.coins*remaining
+        const base=calcBase(task,settings)
+        const remaining=assign.count-(assign.done||0),isMe=showU===0,cost=base*remaining
         return<div key={`${assign.id}-${assign.stolen?"s":"n"}`} style={{display:"flex",alignItems:"center",gap:11,padding:"13px 0",borderBottom:i<currentAssigns.length-1?"1px solid #F2EEFA":"none"}}>
           <TaskIcon task={task}/>
           <div style={{flex:1,minWidth:0}}>
@@ -626,7 +736,7 @@ function DraftScreen({state,dispatch}){
               {assign.stolen&&<span style={{background:"linear-gradient(135deg,#FF7A1A,#FFB323)",color:"#fff",borderRadius:6,padding:"2px 7px",fontFamily:F.body,fontWeight:800,fontSize:10,flexShrink:0}}>ROUBADA</span>}
             </div>
             <div style={{display:"flex",alignItems:"center",gap:6,marginTop:2}}>
-              <TaskMeta task={task}/>
+              <TaskMeta task={task} settings={settings}/>
               {assign.count>1&&<span style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.soft}}>{"\u00b7"} {assign.done||0}/{assign.count}{"\u00d7"}</span>}
               {assign.stolen&&<span style={{fontFamily:F.body,fontSize:11,fontWeight:800,color:C.fire}}>{"\u00b7"} 2,5{"\u00d7"} ao concluir</span>}
             </div>
@@ -645,9 +755,9 @@ function DraftScreen({state,dispatch}){
             </button>
           )}
           {draftLocked&&!isMe&&remaining>0&&(stealsUsed<2
-            ?<button onClick={()=>setConfirmSteal({task,assign})} style={{background:"linear-gradient(135deg,#FF7A1A,#FFB323)",border:"none",borderRadius:12,padding:"7px 10px",cursor:"pointer",flexShrink:0,boxShadow:"0 3px 0 #E0900A",textAlign:"center"}}>
+            ?<button onClick={()=>setConfirmSteal({task,assign,base})} style={{background:"linear-gradient(135deg,#FF7A1A,#FFB323)",border:"none",borderRadius:12,padding:"7px 10px",cursor:"pointer",flexShrink:0,boxShadow:"0 3px 0 #E0900A",textAlign:"center"}}>
                 <div style={{fontFamily:F.body,fontWeight:800,fontSize:11.5,color:"#fff"}}>Roubar</div>
-                <div style={{fontFamily:F.body,fontWeight:800,fontSize:11,color:"rgba(255,255,255,.9)",display:"flex",alignItems:"center",gap:2,justifyContent:"center",marginTop:1}}><Icon name="paid" size={12} color="#fff"/>{task.coins}</div>
+                <div style={{fontFamily:F.body,fontWeight:800,fontSize:11,color:"rgba(255,255,255,.9)",display:"flex",alignItems:"center",gap:2,justifyContent:"center",marginTop:1}}><Icon name="paid" size={12} color="#fff"/>{base}</div>
               </button>
             :<div style={{background:"#F8F7FB",borderRadius:12,padding:"7px 10px",flexShrink:0,textAlign:"center"}}><div style={{fontFamily:F.body,fontWeight:800,fontSize:11,color:C.softer,lineHeight:1.3}}>Limite<br/>atingido</div></div>
           )}
@@ -660,7 +770,7 @@ function DraftScreen({state,dispatch}){
         {lib.filter(t=>!(showU===0?a0:a1).find(a=>a.id===t.id&&!a.stolen)).map((task,i,arr)=>(
           <div key={task.id} style={{display:"flex",alignItems:"center",gap:11,padding:"13px 0",borderBottom:i<arr.length-1?"1px solid #F2EEFA":"none"}}>
             <TaskIcon task={task}/>
-            <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text}}>{task.name}</div><TaskMeta task={task}/></div>
+            <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text}}>{task.name}</div><TaskMeta task={task} settings={settings}/></div>
             <button onClick={()=>setCount(showU,task.id,1)} style={{background:"none",color:C.violet,border:`2px solid ${C.violet}`,borderRadius:12,padding:"7px 12px",fontFamily:F.display,fontWeight:800,fontSize:13,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>+ Assumir</button>
           </div>
         ))}
@@ -675,30 +785,28 @@ function DraftScreen({state,dispatch}){
     </div>}
     {confirmUnassign&&<ConfirmSheet
       title={`Desatribuir "${confirmUnassign.task.name}"?`}
-      msg={`Voc\u00ea tem ${myCoins} moedas. Vai custar ${confirmUnassign.cost} moedas para remover as ${confirmUnassign.assign.count-(confirmUnassign.assign.done||0)} execu\u00e7\u00f5es restantes.`}
+      msg={`Voc\u00ea tem ${myCoins} moedas. Vai custar ${confirmUnassign.cost} moedas.`}
       confirmLabel={`Desatribuir \u00b7 ${confirmUnassign.cost} \uD83E\uDE99`}
       onConfirm={()=>{dispatch({type:"UNASSIGN_TASK",userId:"0",taskId:confirmUnassign.task.id});setConfirmUnassign(null)}}
       onCancel={()=>setConfirmUnassign(null)} danger/>}
     {confirmSteal&&<ConfirmSheet
       title={`Roubar "${confirmSteal.task.name}"?`}
-      msg={`Custa ${confirmSteal.task.coins} moedas agora (voc\u00ea tem ${myCoins}). Ao concluir, ganha ${Math.round(confirmSteal.task.coins*2.5)} moedas \u2014 lucro de ${Math.round(confirmSteal.task.coins*1.5)}!`}
-      confirmLabel={`Roubar \u00b7 ${confirmSteal.task.coins} \uD83E\uDE99`}
+      msg={`Custa ${confirmSteal.base} moedas agora (voc\u00ea tem ${myCoins}). Ao concluir, ganha ${Math.round(confirmSteal.base*2.5)} moedas \u2014 lucro de ${Math.round(confirmSteal.base*1.5)}!`}
+      confirmLabel={`Roubar \u00b7 ${confirmSteal.base} \uD83E\uDE99`}
       onConfirm={()=>{dispatch({type:"STEAL_TASK",userId:"0",partnerId:"1",taskId:confirmSteal.task.id});setConfirmSteal(null)}}
       onCancel={()=>setConfirmSteal(null)}/>}
   </div>
 }
 
 function TasksScreen({state,dispatch}){
-  const lib=state.library,myAssigns=state.draft.assigns?.["0"]||[]
+  const lib=state.library,settings=state.settings,myAssigns=state.draft.assigns?.["0"]||[]
   const total=myAssigns.reduce((a,x)=>a+x.count,0),done=myAssigns.reduce((a,x)=>a+(x.done||0),0)
   const allDone=total>0&&done>=total,bonusGiven=state.draft.bonus_given
   const history=(state.history||[]).filter(h=>h.userId==="0").slice().reverse()
-  const monthsArr=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
-  const mName=monthsArr[new Date().getMonth()]
   return<div style={{padding:"calc(env(safe-area-inset-top,20px) + 18px) 16px 100px",display:"flex",flexDirection:"column",gap:14}}>
     <div>
       <span style={{fontFamily:F.display,fontWeight:700,fontSize:25,color:C.text}}>Minhas Tarefas</span>
-      <div style={{fontFamily:F.body,fontSize:13,fontWeight:700,color:C.soft,marginTop:2}}>Ranking de {mName} {"\u00b7"} faltam {daysLeft()} dias</div>
+      <div style={{fontFamily:F.body,fontSize:13,fontWeight:700,color:C.soft,marginTop:2}}>Ranking de {mName()} {"\u00b7"} faltam {daysLeft()} dias</div>
     </div>
     {total>0&&<div style={{background:C.violet,borderRadius:22,padding:16,color:"#fff",boxShadow:`0 4px 0 ${C.violetSd},0 10px 24px rgba(123,91,255,.25)`,position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",top:-30,right:-20,width:120,height:120,borderRadius:"50%",background:"rgba(255,255,255,.1)"}}/>
@@ -724,6 +832,7 @@ function TasksScreen({state,dispatch}){
       :<div style={{...C.card,padding:"4px 14px"}}>
         {myAssigns.map((assign,i)=>{
           const task=lib.find(t=>t.id===assign.id);if(!task)return null
+          const base=calcBase(task,settings)
           const tDone=assign.done||0,tTotal=assign.count,isOk=tDone>=tTotal
           return<div key={`${assign.id}-${assign.stolen?"s":"n"}`} style={{display:"flex",alignItems:"center",gap:11,padding:"13px 0",borderBottom:i<myAssigns.length-1?"1px solid #F2EEFA":"none"}}>
             <TaskIcon task={task}/>
@@ -737,7 +846,7 @@ function TasksScreen({state,dispatch}){
                   <div style={{flex:1,maxWidth:100,height:7,borderRadius:999,background:"#EEEAF6",overflow:"hidden"}}><div style={{height:"100%",width:`${tDone/tTotal*100}%`,background:isOk?C.green:C.violet,borderRadius:999}}/></div>
                   <span style={{fontFamily:F.body,fontSize:11.5,fontWeight:800,color:C.soft}}>{tDone}/{tTotal}</span>
                 </div>
-                :<div style={{fontFamily:F.body,fontSize:11.5,fontWeight:800,color:isOk?C.green:C.soft}}>{isOk?"Conclu\u00edda \u2713":assign.stolen?`+${Math.round(task.coins*2.5)} \uD83E\uDE99 ao concluir`:`+${task.coins} moedas`}</div>}
+                :<div style={{fontFamily:F.body,fontSize:11.5,fontWeight:800,color:isOk?C.green:C.soft}}>{isOk?"Conclu\u00edda \u2713":assign.stolen?`+${Math.round(base*2.5)} \uD83E\uDE99 ao concluir`:`+${base} moedas`}</div>}
             </div>
             <div style={{display:"flex",gap:6,flexShrink:0}}>
               {tDone>0&&<button onClick={()=>dispatch({type:"UNDO_COMPLETE",userId:"0",taskId:assign.id,stolen:assign.stolen})} style={{width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",background:"#F0ECFF",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="remove" size={18} color={C.violet}/></button>}
@@ -790,10 +899,7 @@ function MarketScreen({state,dispatch,showToast}){
       <div style={{fontFamily:F.body,fontSize:11,fontWeight:800,letterSpacing:.5,opacity:.9}}>{"PR\u00d3XIMA RECOMPENSA"}</div>
       <div style={{display:"flex",alignItems:"center",gap:13,marginTop:8,position:"relative"}}>
         <div style={{width:52,height:52,borderRadius:16,background:"rgba(255,255,255,.22)",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name={nextReward.icon} size={30} color="#fff"/></div>
-        <div style={{flex:1}}>
-          <div style={{fontFamily:F.display,fontWeight:700,fontSize:19}}>{nextReward.name}</div>
-          <div style={{fontFamily:F.body,fontSize:12.5,fontWeight:700,opacity:.9}}>Faltam {nextReward.cost-coins} moedas</div>
-        </div>
+        <div style={{flex:1}}><div style={{fontFamily:F.display,fontWeight:700,fontSize:19}}>{nextReward.name}</div><div style={{fontFamily:F.body,fontSize:12.5,fontWeight:700,opacity:.9}}>Faltam {nextReward.cost-coins} moedas</div></div>
       </div>
       <div style={{marginTop:12,height:10,borderRadius:999,background:"rgba(0,0,0,.18)",overflow:"hidden"}}><div style={{height:"100%",width:`${featPct}%`,background:"#fff",borderRadius:999,transition:"width .4s"}}/></div>
       <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontFamily:F.body,fontSize:12,fontWeight:800}}><span>{coins} / {nextReward.cost}</span><span style={{opacity:.9}}>{featPct}%</span></div>
@@ -828,8 +934,7 @@ function ProfileScreen({state,dispatch}){
   const assigns=state.draft.assigns?.[uid]||[]
   const tot=assigns.reduce((a,x)=>a+x.count,0),don=assigns.reduce((a,x)=>a+(x.done||0),0)
   const commitment=tot>0?Math.round(don/tot*100):100
-  const partnerStats=state.stats[String(pairIdx)]
-  const hallPos=stats.hall_points>=partnerStats.hall_points?"1\u00ba":"2\u00ba"
+  const hallPos=stats.hall_points>=state.stats[String(pairIdx)].hall_points?"1\u00ba":"2\u00ba"
   const myRedemptions=(state.redemptions||[]).filter(r=>r.userId===uid).slice().reverse()
   return<div style={{padding:"calc(env(safe-area-inset-top,20px) + 18px) 16px 100px",display:"flex",flexDirection:"column",gap:14}}>
     <Card style={{display:"flex",alignItems:"center",gap:14,padding:18}}>
@@ -852,10 +957,7 @@ function ProfileScreen({state,dispatch}){
     </div>
     {activeTab==="perfil"&&<>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        {[{label:"Tarefas",value:stats.tasks_done,icon:"task_alt",color:C.green},
-          {label:"Moedas",value:stats.coins,icon:"paid",color:C.gold},
-          {label:"Melhor sequ\u00eancia",value:`${stats.best_streak}d`,icon:"local_fire_department",color:C.fire},
-          {label:"Pontos totais",value:stats.hall_points,icon:"bolt",color:C.violet}].map(({label,value,icon,color})=>(
+        {[{label:"Tarefas",value:stats.tasks_done,icon:"task_alt",color:C.green},{label:"Moedas",value:stats.coins,icon:"paid",color:C.gold},{label:"Melhor sequ\u00eancia",value:`${stats.best_streak}d`,icon:"local_fire_department",color:C.fire},{label:"Pontos totais",value:stats.hall_points,icon:"bolt",color:C.violet}].map(({label,value,icon,color})=>(
           <div key={label} style={{...C.card,padding:14,display:"flex",alignItems:"center",gap:11}}>
             <Icon name={icon} size={28} color={color}/>
             <div style={{minWidth:0}}><div style={{fontFamily:F.display,fontWeight:800,fontSize:20,color:C.text,lineHeight:1}}>{value}</div><div style={{fontFamily:F.body,fontSize:11,fontWeight:700,color:C.soft}}>{label}</div></div>
@@ -865,19 +967,17 @@ function ProfileScreen({state,dispatch}){
       <SectionLabel>Conquistas</SectionLabel>
       <div style={{...C.card,padding:16,marginTop:-4}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"14px 12px"}}>
-          {ACHS.map(ach=>{
-            const got=unlocked.includes(ach.id)
-            return<div key={ach.id} style={{textAlign:"center"}}>
+          {ACHS.map(ach=>{const got=unlocked.includes(ach.id);return(
+            <div key={ach.id} style={{textAlign:"center"}}>
               <div style={{width:54,height:54,borderRadius:"50%",background:got?(GRADS[ach.th]||GRADS.violet):"#F1EFF6",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 5px",boxShadow:got?`0 3px 0 ${GRADSD[ach.th]||GRADSD.violet}`:"none"}}><Icon name={got?ach.icon:"lock"} size={got?27:24} color={got?"#fff":"#C2BBD2"}/></div>
               <div style={{fontFamily:F.body,fontSize:10,fontWeight:800,color:got?"#5a5468":C.softer,lineHeight:1.15}}>{ach.label}</div>
             </div>
-          })}
+          )})}
         </div>
       </div>
-      <div style={{background:"linear-gradient(135deg,#2A1E4D,#3D2C6E)",borderRadius:22,padding:16,color:"#fff",boxShadow:"0 4px 0 #1B1333",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-20,right:-10,width:90,height:90,borderRadius:"50%",background:"rgba(255,255,255,.06)"}}/>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,position:"relative"}}><Icon name="workspace_premium" size={22} color={C.gold}/><span style={{fontFamily:F.display,fontWeight:700,fontSize:16}}>Hall da Fama</span><span style={{fontFamily:F.body,fontSize:11,fontWeight:700,color:"rgba(255,255,255,.6)",marginLeft:"auto"}}>{"hist\u00f3rico de sempre"}</span></div>
-        <div style={{display:"flex",alignItems:"center",gap:12,position:"relative"}}>
+      <div style={{background:"linear-gradient(135deg,#2A1E4D,#3D2C6E)",borderRadius:22,padding:16,color:"#fff",boxShadow:"0 4px 0 #1B1333"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}><Icon name="workspace_premium" size={22} color={C.gold}/><span style={{fontFamily:F.display,fontWeight:700,fontSize:16}}>Hall da Fama</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1}}><div style={{fontFamily:F.body,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.7)"}}>Pontos acumulados</div><div style={{fontFamily:F.display,fontWeight:800,fontSize:28}}>{stats.hall_points}</div></div>
           <div style={{textAlign:"center",background:"rgba(255,255,255,.1)",borderRadius:16,padding:"10px 16px"}}><div style={{fontFamily:F.display,fontWeight:800,fontSize:22,color:C.gold}}>{hallPos}</div><div style={{fontFamily:F.body,fontSize:10,fontWeight:800,color:"rgba(255,255,255,.7)"}}>na casa</div></div>
         </div>
@@ -888,30 +988,23 @@ function ProfileScreen({state,dispatch}){
     </>}
     {activeTab==="resgates"&&<>
       {myRedemptions.length===0
-        ?<div style={{...C.card,padding:"32px 20px",textAlign:"center"}}>
-          <Icon name="card_giftcard" size={40} color="#C9C3D6"/>
-          <div style={{fontFamily:F.display,fontWeight:800,fontSize:17,color:C.text,marginTop:8}}>Nenhuma recompensa resgatada</div>
-          <div style={{fontFamily:F.body,fontWeight:700,fontSize:13,color:C.soft,marginTop:4}}>Acumule moedas e v\u00e1 ao Market!</div>
-        </div>
-        :<>
-          <div style={{fontFamily:F.body,fontWeight:700,fontSize:13,color:C.soft}}>{myRedemptions.filter(r=>!r.used).length} pendente{myRedemptions.filter(r=>!r.used).length!==1?"s":""} {"\u00b7"} {myRedemptions.filter(r=>r.used).length} utilizada{myRedemptions.filter(r=>r.used).length!==1?"s":""}</div>
-          <div style={{...C.card,padding:"4px 14px"}}>
-            {myRedemptions.map((red,i)=>{
-              const rItem=state.market.find(r=>r.id===red.rewardId),th=TH[rItem?.th||"violet"]||TH.violet
-              return<div key={red.id} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 0",borderBottom:i<myRedemptions.length-1?"1px solid #F2EEFA":"none",opacity:red.used?.65:1}}>
-                <div style={{width:42,height:42,borderRadius:13,background:th.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 2px 0 ${th.sd}`}}><Icon name={rItem?.icon||"card_giftcard"} size={22} color={th.fg}/></div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:F.display,fontWeight:700,fontSize:14.5,color:C.text,textDecoration:red.used?"line-through":"none"}}>{red.rewardName}</div>
-                  <div style={{fontFamily:F.body,fontSize:11.5,fontWeight:700,color:C.soft,display:"flex",alignItems:"center",gap:4}}>{red.date} {"\u00b7"} <Coin n={red.cost} size={12}/></div>
-                </div>
-                <button onClick={()=>dispatch({type:"MARK_USED",redemptionId:red.id})} style={{flexShrink:0,background:red.used?"#E9F8EF":"#F0ECFF",border:"none",borderRadius:10,padding:"6px 10px",cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
-                  <Icon name={red.used?"check_circle":"radio_button_unchecked"} size={16} color={red.used?C.green:C.softer}/>
-                  <span style={{fontFamily:F.body,fontWeight:800,fontSize:11,color:red.used?C.green:C.softer}}>{red.used?"Usada":"Marcar"}</span>
-                </button>
+        ?<div style={{...C.card,padding:"32px 20px",textAlign:"center"}}><Icon name="card_giftcard" size={40} color="#C9C3D6"/><div style={{fontFamily:F.display,fontWeight:800,fontSize:17,color:C.text,marginTop:8}}>Nenhuma recompensa resgatada</div></div>
+        :<div style={{...C.card,padding:"4px 14px"}}>
+          {myRedemptions.map((red,i)=>{
+            const rItem=state.market.find(r=>r.id===red.rewardId),th=TH[rItem?.th||"violet"]||TH.violet
+            return<div key={red.id} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 0",borderBottom:i<myRedemptions.length-1?"1px solid #F2EEFA":"none",opacity:red.used?.65:1}}>
+              <div style={{width:42,height:42,borderRadius:13,background:th.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 2px 0 ${th.sd}`}}><Icon name={rItem?.icon||"card_giftcard"} size={22} color={th.fg}/></div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:F.display,fontWeight:700,fontSize:14.5,color:C.text,textDecoration:red.used?"line-through":"none"}}>{red.rewardName}</div>
+                <div style={{fontFamily:F.body,fontSize:11.5,fontWeight:700,color:C.soft,display:"flex",alignItems:"center",gap:4}}>{red.date} {"\u00b7"} <Coin n={red.cost} size={12}/></div>
               </div>
-            })}
-          </div>
-        </>}
+              <button onClick={()=>dispatch({type:"MARK_USED",redemptionId:red.id})} style={{flexShrink:0,background:red.used?"#E9F8EF":"#F0ECFF",border:"none",borderRadius:10,padding:"6px 10px",cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
+                <Icon name={red.used?"check_circle":"radio_button_unchecked"} size={16} color={red.used?C.green:C.softer}/>
+                <span style={{fontFamily:F.body,fontWeight:800,fontSize:11,color:red.used?C.green:C.softer}}>{red.used?"Usada":"Marcar"}</span>
+              </button>
+            </div>
+          })}
+        </div>}
     </>}
   </div>
 }
@@ -937,8 +1030,7 @@ function reduce(prev,action){
       return{...prev,draft:{...prev.draft,assigns:{...prev.draft.assigns,[userId]:newArr}}}
     }
     case "DRAFT_CONFIRM":{
-      const wid=sundayWeekId()
-      const lib=prev.library||LIB_DEFAULT
+      const wid=sundayWeekId(),lib=prev.library||LIB_DEFAULT
       const missing=lib.filter(t=>(t.minCount||0)>0).filter(task=>{
         const t0=(prev.draft.assigns?.["0"]||[]).find(a=>a.id===task.id)?.count||0
         const t1=(prev.draft.assigns?.["1"]||[]).find(a=>a.id===task.id)?.count||0
@@ -955,12 +1047,13 @@ function reduce(prev,action){
     case "COMPLETE":{
       const{userId,taskId}=action
       const lib=prev.library||LIB_DEFAULT,task=lib.find(t=>t.id===taskId);if(!task)return prev
+      const base=calcBase(task,prev.settings)
       const myAssigns=prev.draft.assigns?.[userId]||[]
       const myAssign=myAssigns.find(a=>a.id===taskId)
       const stolenMult=myAssign?.stolen?2.5:1
       const s0=applyStreak({...prev.stats[userId]})
-      const earned=Math.round(task.coins*stolenMult*(1+sBon(s0.streak)))
-      s0.month_points+=task.pts;s0.hall_points+=task.pts;s0.coins+=earned
+      const earned=Math.round(base*stolenMult*(1+sBon(s0.streak)))
+      s0.month_points+=base;s0.hall_points+=base;s0.coins+=earned
       s0.tasks_done+=1;s0.task_counts={...(s0.task_counts||{}),[taskId]:(s0.task_counts?.[taskId]||0)+1}
       const assigns={}
       for(const[uid,arr]of Object.entries(prev.draft.assigns||{})){
@@ -970,9 +1063,9 @@ function reduce(prev,action){
       let bonusGiven=prev.draft.bonus_given,gotBonus=false
       if(!bonusGiven){const mine=assigns[userId]||[];if(mine.length>0&&mine.every(a=>(a.done||0)>=a.count)){s0.coins+=50;bonusGiven=true;gotBonus=true;if(navigator.vibrate)navigator.vibrate([50,30,100,30,200])}}
       const now=new Date(),dateStr=`${now.toLocaleDateString("pt-BR")} ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
-      const hist={userId,taskId,taskName:task.name,pts:task.pts,coins:earned,date:dateStr,stolen:myAssign?.stolen}
+      const hist={userId,taskId,taskName:task.name,pts:base,coins:earned,date:dateStr,stolen:myAssign?.stolen}
       const curUnl=prev.unlocked?.[userId]||[],newAchs=checkAchs(s0,curUnl)
-      return{...prev,stats:{...prev.stats,[userId]:s0},draft:{...prev.draft,assigns,bonus_given:bonusGiven},history:[...(prev.history||[]),hist],unlocked:{...prev.unlocked,[userId]:[...curUnl,...newAchs]},_newAchs:newAchs,_reward:{pts:task.pts,coins:earned,bonus:gotBonus}}
+      return{...prev,stats:{...prev.stats,[userId]:s0},draft:{...prev.draft,assigns,bonus_given:bonusGiven},history:[...(prev.history||[]),hist],unlocked:{...prev.unlocked,[userId]:[...curUnl,...newAchs]},_newAchs:newAchs,_reward:{pts:base,coins:earned,bonus:gotBonus}}
     }
     case "UNDO_COMPLETE":{
       const{userId,taskId}=action
@@ -997,7 +1090,8 @@ function reduce(prev,action){
       const{userId,taskId}=action
       const lib=prev.library||LIB_DEFAULT,task=lib.find(t=>t.id===taskId);if(!task)return prev
       const assign=(prev.draft.assigns?.[userId]||[]).find(a=>a.id===taskId&&!a.stolen);if(!assign)return prev
-      const remaining=assign.count-(assign.done||0),cost=task.coins*remaining
+      const base=calcBase(task,prev.settings)
+      const remaining=assign.count-(assign.done||0),cost=base*remaining
       const s0={...prev.stats[userId]};if(s0.coins<cost)return prev
       s0.coins-=cost
       const newAssigns=(prev.draft.assigns?.[userId]||[]).filter(a=>!(a.id===taskId&&!a.stolen))
@@ -1006,8 +1100,9 @@ function reduce(prev,action){
     case "STEAL_TASK":{
       const{userId,partnerId,taskId}=action
       const lib=prev.library||LIB_DEFAULT,task=lib.find(t=>t.id===taskId);if(!task)return prev
-      const s0={...prev.stats[userId]};if(s0.coins<task.coins)return prev
-      s0.coins-=task.coins
+      const base=calcBase(task,prev.settings)
+      const s0={...prev.stats[userId]};if(s0.coins<base)return prev
+      s0.coins-=base
       const pArr=[...(prev.draft.assigns?.[partnerId]||[])],pIdx=pArr.findIndex(a=>a.id===taskId&&!a.stolen)
       if(pIdx===-1)return prev
       const pA=pArr[pIdx]
@@ -1027,13 +1122,10 @@ function reduce(prev,action){
       const now=new Date(),dateStr=`${now.toLocaleDateString("pt-BR")} ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
       return{...prev,stats:{...prev.stats,[userId]:s0},redemptions:[...(prev.redemptions||[]),{id:redemptionId||genId(),userId,rewardId,rewardName:r.name,cost:r.cost,date:dateStr,used:false}]}
     }
-    case "UNDO_REDEEM":{
-      const{redemptionId,userId,cost}=action
-      const s0={...prev.stats[userId]};s0.coins+=cost
-      return{...prev,stats:{...prev.stats,[userId]:s0},redemptions:(prev.redemptions||[]).filter(r=>r.id!==redemptionId)}
-    }
+    case "UNDO_REDEEM":{const{redemptionId,userId,cost}=action;const s0={...prev.stats[userId]};s0.coins+=cost;return{...prev,stats:{...prev.stats,[userId]:s0},redemptions:(prev.redemptions||[]).filter(r=>r.id!==redemptionId)}}
     case "MARK_USED":return{...prev,redemptions:(prev.redemptions||[]).map(r=>r.id===action.redemptionId?{...r,used:!r.used}:r)}
     case "UPDATE_SETTINGS":return{...prev,house:{...prev.house,name:action.house},users:[{...prev.users[0],name:action.name0},{...prev.users[1],name:action.name1}]}
+    case "UPDATE_GAME_SETTINGS":return{...prev,settings:{...(prev.settings||blankSettings()),...action.settings}}
     case "ADD_TASK":   return{...prev,library:[...(prev.library||[]),action.task]}
     case "EDIT_TASK":  return{...prev,library:(prev.library||[]).map(t=>t.id===action.taskId?{...t,...action.updates}:t)}
     case "DELETE_TASK":return{...prev,library:(prev.library||[]).filter(t=>t.id!==action.taskId)}
@@ -1056,10 +1148,7 @@ export default function CasaApp(){
 
   useEffect(()=>{store.set(state)},[state])
   useEffect(()=>{
-    const links=[
-      "https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap",
-      "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,1,0&display=block"
-    ]
+    const links=["https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap","https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,1,0&display=block"]
     links.forEach(href=>{const l=document.createElement("link");l.rel="stylesheet";l.href=href;document.head.appendChild(l)})
     const s=document.createElement("style")
     s.textContent=`*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:#dad6ce}.material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}::-webkit-scrollbar{width:0;height:0}@keyframes shine{0%{transform:translateX(-120%)}100%{transform:translateX(240%)}}@keyframes floatUp{0%{transform:translateY(0) scale(.7);opacity:0}18%{opacity:1;transform:translateY(-8px) scale(1.05)}100%{transform:translateY(-96px) scale(1);opacity:0}}@keyframes popIn{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}@keyframes toastIn{0%{transform:translateY(30px);opacity:0}100%{transform:translateY(0);opacity:1}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}`
@@ -1082,7 +1171,7 @@ export default function CasaApp(){
 
   const showToast=(msg,action,onAction)=>{setToast(null);setTimeout(()=>setToast({msg,action,onAction}),50)}
 
-  if(!state.house.name)return<div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:C.bg}}><Onboarding onDone={({house,myName,pairName,assigns})=>dispatch({type:"INIT",house,myName,pairName,assigns})}/></div>
+  if(!state.house.name)return<div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:C.bg}}><Onboarding settings={state.settings} onDone={({house,myName,pairName,assigns})=>dispatch({type:"INIT",house,myName,pairName,assigns})}/></div>
 
   return<div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:C.bg,position:"relative",overflowX:"hidden",boxShadow:"0 0 60px rgba(0,0,0,.12)"}}>
     <div style={{position:"absolute",inset:0,zIndex:120,pointerEvents:"none",overflow:"hidden"}}>
