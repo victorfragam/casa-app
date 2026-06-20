@@ -402,13 +402,11 @@ function JoinOrCreateScreen({onDone}){
     if(code.trim().length<4)return
     setLoading(true);setError("")
     try{
-      const raw=code.trim().replace(/-/g,"").toLowerCase()
-      // Reformat to UUID with dashes: 8-4-4-4-12
-      const uuid=raw.length===32
-        ?`${raw.slice(0,8)}-${raw.slice(8,12)}-${raw.slice(12,16)}-${raw.slice(16,20)}-${raw.slice(20)}`
-        :raw
+      const raw=code.trim().toLowerCase().replace(/-/g,"").replace(/\s/g,"")
+      if(raw.length!==32){throw new Error("Cole o c\u00f3digo completo de 32 caracteres")}
+      const uuid=`${raw.slice(0,8)}-${raw.slice(8,12)}-${raw.slice(12,16)}-${raw.slice(16,20)}-${raw.slice(20)}`
       const{data,error}=await supabase.from("houses").select().eq("id",uuid).single()
-      if(error||!data)throw new Error(`Casa n\u00e3o encontrada`)
+      if(error||!data)throw new Error("Casa n\u00e3o encontrada")
       localStorage.setItem("casa_house_id",data.id)
       localStorage.setItem("casa_user_idx","1")
       onDone(data.id,"1")
@@ -639,7 +637,7 @@ function SettingsScreen({state,dispatch,myUserId,houseId,onClose}){
       {/* Convite */}
       {houseId&&<Card style={{padding:16,textAlign:"center"}}>
         <div style={{fontFamily:F.body,fontWeight:800,fontSize:12,color:C.soft,letterSpacing:.5,marginBottom:10}}>{"C\u00d3DIGO DA CASA"}</div>
-        <div style={{fontFamily:F.display,fontWeight:800,fontSize:34,color:C.violet,letterSpacing:6,marginBottom:4}}>{houseId.slice(0,8).toUpperCase()}</div>
+        {(()=>{const c=houseId.replace(/-/g,"").toUpperCase();return[0,8,16,24].map(i=><div key={i} style={{fontFamily:F.display,fontWeight:800,fontSize:17,color:C.violet,letterSpacing:3}}>{c.slice(i,i+8)}</div>)})()}
         <div style={{fontFamily:F.body,fontWeight:700,fontSize:12,color:C.soft,marginBottom:14}}>{"Compartilhe com seu par para entrar na mesma casa"}</div>
         <button onClick={()=>{
           const code=houseId.replace(/-/g,"").toUpperCase()
