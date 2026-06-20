@@ -402,13 +402,16 @@ function JoinOrCreateScreen({onDone}){
     if(code.trim().length<4)return
     setLoading(true);setError("")
     try{
-      const search=code.trim().toLowerCase().replace(/-/g,"")
-      const{data,error}=await supabase.from("houses").select().ilike("id",`${search}%`)
-      if(error)throw error
-      if(!data||data.length===0)throw new Error(`Nenhuma casa com c\u00f3digo "${code.trim()}"`)
-      localStorage.setItem("casa_house_id",data[0].id)
+      const raw=code.trim().replace(/-/g,"").toLowerCase()
+      // Reformat to UUID with dashes: 8-4-4-4-12
+      const uuid=raw.length===32
+        ?`${raw.slice(0,8)}-${raw.slice(8,12)}-${raw.slice(12,16)}-${raw.slice(16,20)}-${raw.slice(20)}`
+        :raw
+      const{data,error}=await supabase.from("houses").select().eq("id",uuid).single()
+      if(error||!data)throw new Error(`Casa n\u00e3o encontrada`)
+      localStorage.setItem("casa_house_id",data.id)
       localStorage.setItem("casa_user_idx","1")
-      onDone(data[0].id,"1")
+      onDone(data.id,"1")
     }catch(e){setError(`Erro: ${e?.message||e}`);setLoading(false)}
   }
   return<div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 28px",textAlign:"center"}}>
@@ -636,10 +639,14 @@ function SettingsScreen({state,dispatch,myUserId,houseId,onClose}){
       {/* Convite */}
       {houseId&&<Card style={{padding:16,textAlign:"center"}}>
         <div style={{fontFamily:F.body,fontWeight:800,fontSize:12,color:C.soft,letterSpacing:.5,marginBottom:10}}>{"C\u00d3DIGO DA CASA"}</div>
-        <div style={{fontFamily:F.display,fontWeight:800,fontSize:34,color:C.violet,letterSpacing:6,marginBottom:4}}>{inviteCode}</div>
+        <div style={{fontFamily:F.display,fontWeight:800,fontSize:18,color:C.violet,marginBottom:4,wordBreak:"break-all",letterSpacing:1}}>{houseId.replace(/-/g,"").toUpperCase()}</div>
         <div style={{fontFamily:F.body,fontWeight:700,fontSize:12,color:C.soft,marginBottom:14}}>{"Compartilhe com seu par para entrar na mesma casa"}</div>
-        <button onClick={copyCode} style={{background:codeCopied?"#E9F8EF":C.violet,border:"none",borderRadius:14,padding:"11px 0",fontFamily:F.display,fontWeight:800,fontSize:15,color:codeCopied?C.green:"#fff",cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s"}}>
-          <Icon name={codeCopied?"check":"content_copy"} size={18} color={codeCopied?C.green:"#fff"}/>{codeCopied?"Copiado!":"Copiar c\u00f3digo"}
+        <button onClick={()=>{
+          const code=houseId.replace(/-/g,"").toUpperCase()
+          if(navigator.share){navigator.share({title:"Casa App",text:`Entre na nossa casa com o c\u00f3digo: ${code}`})}
+          else if(navigator.clipboard){navigator.clipboard.writeText(code);setCodeCopied(true);setTimeout(()=>setCodeCopied(false),2000)}
+        }} style={{background:codeCopied?"#E9F8EF":C.violet,border:"none",borderRadius:14,padding:"11px 0",fontFamily:F.display,fontWeight:800,fontSize:15,color:codeCopied?C.green:"#fff",cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s"}}>
+          <Icon name={codeCopied?"check":"share"} size={18} color={codeCopied?C.green:"#fff"}/>{codeCopied?"Copiado!":"Compartilhar c\u00f3digo"}
         </button>
       </Card>}
 
