@@ -423,9 +423,9 @@ function JoinOrCreateScreen({onDone}){
       <button onClick={()=>setMode("join")} style={{background:"none",border:`2px solid ${C.violet}`,borderRadius:16,padding:"14px 20px",fontFamily:F.display,fontWeight:800,fontSize:17,color:C.violet,cursor:"pointer",width:"100%"}}>Entrar numa casa</button>
     </div>}
     {mode==="join"&&<div style={{width:"100%",display:"flex",flexDirection:"column",gap:12}}>
-      <div style={{fontFamily:F.body,fontWeight:700,fontSize:14,color:C.soft,marginBottom:4}}>{"Digite o c\u00f3digo da casa (primeiros 8 caracteres)"}</div>
-      <input value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="Ex: YUHHQLAO" autoFocus
-        style={{...inp,fontSize:22,letterSpacing:4,textAlign:"center",fontFamily:F.display,fontWeight:800}}/>
+      <div style={{fontFamily:F.body,fontWeight:700,fontSize:14,color:C.soft,marginBottom:4}}>{"Cole o c\u00f3digo compartilhado"}</div>
+      <input value={code} onChange={e=>setCode(e.target.value)} placeholder="Cole o código aqui" autoFocus
+        style={{...inp,fontSize:14,textAlign:"center",fontFamily:F.display,fontWeight:700}}/>
       <Btn3D onClick={handleJoin} disabled={loading||code.trim().length<4}>{loading?"Entrando...":"Entrar"}</Btn3D>
       <button onClick={()=>{setMode(null);setError("");setCode("")}} style={{background:"none",border:"none",fontFamily:F.display,fontWeight:800,fontSize:15,color:C.soft,cursor:"pointer",padding:10}}>Voltar</button>
     </div>}
@@ -639,7 +639,7 @@ function SettingsScreen({state,dispatch,myUserId,houseId,onClose}){
       {/* Convite */}
       {houseId&&<Card style={{padding:16,textAlign:"center"}}>
         <div style={{fontFamily:F.body,fontWeight:800,fontSize:12,color:C.soft,letterSpacing:.5,marginBottom:10}}>{"C\u00d3DIGO DA CASA"}</div>
-        <div style={{fontFamily:F.display,fontWeight:800,fontSize:18,color:C.violet,marginBottom:4,wordBreak:"break-all",letterSpacing:1}}>{houseId.replace(/-/g,"").toUpperCase()}</div>
+        <div style={{fontFamily:F.display,fontWeight:800,fontSize:34,color:C.violet,letterSpacing:6,marginBottom:4}}>{houseId.slice(0,8).toUpperCase()}</div>
         <div style={{fontFamily:F.body,fontWeight:700,fontSize:12,color:C.soft,marginBottom:14}}>{"Compartilhe com seu par para entrar na mesma casa"}</div>
         <button onClick={()=>{
           const code=houseId.replace(/-/g,"").toUpperCase()
