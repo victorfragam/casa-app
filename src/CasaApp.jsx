@@ -857,15 +857,28 @@ function DraftScreen({state,dispatch,myUserId,partnerId}){
       })}
     </div>
     {!draftLocked&&<>
-      <SectionLabel>Adicionar tarefa</SectionLabel>
+      <SectionLabel>Atribuir tarefas</SectionLabel>
       <div style={{...C.card,padding:"4px 14px",marginTop:-4}}>
-        {lib.filter(t=>!currentAssigns.find(a=>a.id===t.id&&!a.stolen)).map((task,i,arr)=>(
-          <div key={task.id} style={{display:"flex",alignItems:"center",gap:11,padding:"13px 0",borderBottom:i<arr.length-1?"1px solid #F2EEFA":"none"}}>
+        {lib.map((task,i)=>{
+          const myHas=!!myAssigns.find(a=>a.id===task.id&&!a.stolen)
+          const partnerHas=!!partnerAssigns.find(a=>a.id===task.id&&!a.stolen)
+          const toggleUser=(uid,has)=>dispatch({type:"DRAFT_SET",userId:uid,taskId:task.id,count:has?0:1})
+          return<div key={task.id} style={{display:"flex",alignItems:"center",gap:11,padding:"13px 0",borderBottom:i<lib.length-1?"1px solid #F2EEFA":"none"}}>
             <TaskIcon task={task}/>
-            <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text}}>{task.name}</div><TaskMeta task={task} settings={settings}/></div>
-            <button onClick={()=>setCount(showU,task.id,1)} style={{background:"none",color:C.violet,border:`2px solid ${C.violet}`,borderRadius:12,padding:"7px 12px",fontFamily:F.display,fontWeight:800,fontSize:13,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>+ Assumir</button>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:F.display,fontWeight:700,fontSize:15,color:C.text}}>{task.name}</div>
+              <TaskMeta task={task} settings={settings}/>
+            </div>
+            <div style={{display:"flex",gap:6,flexShrink:0}}>
+              <button onClick={()=>toggleUser(myUserId,myHas)} style={{width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",background:myHas?ME_GRAD:"#F0ECFF",boxShadow:myHas?`0 3px 0 ${ME_SD}`:"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
+                <span style={{fontFamily:F.display,fontWeight:800,fontSize:14,color:myHas?"#fff":C.violet}}>{ini(myName)}</span>
+              </button>
+              <button onClick={()=>toggleUser(partnerId,partnerHas)} style={{width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",background:partnerHas?PAIR_GRAD:"#F0ECFF",boxShadow:partnerHas?`0 3px 0 ${PAIR_SD}`:"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
+                <span style={{fontFamily:F.display,fontWeight:800,fontSize:14,color:partnerHas?"#fff":C.violet}}>{ini(partnerName)}</span>
+              </button>
+            </div>
           </div>
-        ))}
+        })}
       </div>
     </>}
     {!draftLocked&&<div style={{position:"fixed",bottom:"calc(env(safe-area-inset-bottom,0px) + 80px)",left:0,right:0,maxWidth:430,margin:"0 auto",padding:"0 20px",zIndex:60,pointerEvents:"none"}}>
@@ -1244,6 +1257,9 @@ export default function CasaApp(){
   const[floats,setFloats]=useState([]),[settingsOpen,setSettingsOpen]=useState(false)
   const isSavingRef=useRef(false),saveTimer=useRef(null),channelRef=useRef(null)
 
+  const myUserIdRef=useRef(myUserId)
+  useEffect(()=>{myUserIdRef.current=myUserId},[myUserId])
+
   useEffect(()=>{
     if(!houseId){setState(null);return}
     const load=async()=>{
@@ -1254,7 +1270,24 @@ export default function CasaApp(){
     load()
     const ch=supabase.channel(`house_${houseId}`)
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"houses",filter:`id=eq.${houseId}`},(payload)=>{
-        if(!isSavingRef.current)setState(migrateState(payload.new.state))
+        if(!isSavingRef.current){
+          setState(prev=>{
+            const incoming=migrateState(payload.new.state)
+            if(!prev)return incoming
+            // Smart merge: keep MY assigns, take partner's from incoming
+            const uid=myUserIdRef.current
+            return{
+              ...incoming,
+              draft:{
+                ...incoming.draft,
+                assigns:{
+                  ...incoming.draft.assigns,
+                  [uid]:prev.draft.assigns?.[uid]||incoming.draft.assigns?.[uid]||[]
+                }
+              }
+            }
+          })
+        }
       })
       .subscribe()
     channelRef.current=ch
