@@ -870,10 +870,10 @@ function DraftScreen({state,dispatch,myUserId,partnerId}){
               <TaskMeta task={task} settings={settings}/>
             </div>
             <div style={{display:"flex",gap:6,flexShrink:0}}>
-              <button onClick={()=>toggleUser(myUserId,myHas)} style={{width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",background:myHas?ME_GRAD:"#F0ECFF",boxShadow:myHas?`0 3px 0 ${ME_SD}`:"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
+              <button onClick={()=>toggleUser(myUserId,myHas)} style={{width:36,height:36,borderRadius:10,border:"none",cursor:"pointer",background:myHas?ME_GRAD:"#F0ECFF",boxShadow:myHas?`0 3px 0 ${ME_SD}`:"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
                 <span style={{fontFamily:F.display,fontWeight:800,fontSize:14,color:myHas?"#fff":C.violet}}>{ini(myName)}</span>
               </button>
-              <button onClick={()=>toggleUser(partnerId,partnerHas)} style={{width:36,height:36,borderRadius:"50%",border:"none",cursor:"pointer",background:partnerHas?PAIR_GRAD:"#F0ECFF",boxShadow:partnerHas?`0 3px 0 ${PAIR_SD}`:"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
+              <button onClick={()=>toggleUser(partnerId,partnerHas)} style={{width:36,height:36,borderRadius:10,border:"none",cursor:"pointer",background:partnerHas?PAIR_GRAD:"#F0ECFF",boxShadow:partnerHas?`0 3px 0 ${PAIR_SD}`:"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
                 <span style={{fontFamily:F.display,fontWeight:800,fontSize:14,color:partnerHas?"#fff":C.violet}}>{ini(partnerName)}</span>
               </button>
             </div>
