@@ -1158,7 +1158,6 @@ function reduce(prev,action){
         else assigns[uid]=arr
       }
       let bonusGiven=prev.draft.bonus_given,gotBonus=false
-      if(!bonusGiven){const mine=assigns[userId]||[];if(mine.length>0&&mine.every(a=>(a.done||0)>=a.count)){s0.coins+=50;bonusGiven=true;gotBonus=true;if(navigator.vibrate)navigator.vibrate([50,30,100,30,200])}}
       const now=new Date(),dateStr=`${now.toLocaleDateString("pt-BR")} ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
       const hist={userId,taskId,taskName:task.name,pts:base,coins:earned,date:dateStr,stolen:myAssign?.stolen}
       const curUnl=prev.unlocked?.[userId]||[],newAchs=checkAchs(s0,curUnl)
